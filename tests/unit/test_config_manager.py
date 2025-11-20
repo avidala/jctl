@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from jctl.config.manager import ConfigManager
 from jctl.config.schemas import Config
@@ -91,7 +92,6 @@ class TestConfigManager:
 
         manager = ConfigManager(config_dir=temp_config_dir)
 
-        from pydantic import ValidationError
         with pytest.raises(ValidationError):
             manager.load()
 
