@@ -1,5 +1,6 @@
 """Tests for configuration manager."""
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,7 @@ class TestConfigManager:
         assert manager.config_dir == temp_config_dir
         assert manager.config_file == temp_config_dir / "config.yaml"
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unix file permissions don't apply on Windows")
     def test_ensure_config_dir(self, temp_config_dir):
         """Test ensuring config directory exists."""
         config_dir = temp_config_dir / "new_config"
@@ -124,10 +126,13 @@ class TestConfigManager:
 
         manager.save(config)
 
-        # Verify file was created and has correct permissions
+        # Verify file was created
         assert manager.config_file.exists()
-        stat_info = manager.config_file.stat()
-        assert oct(stat_info.st_mode)[-3:] == "600"
+
+        # Verify file permissions (Unix only)
+        if sys.platform != "win32":
+            stat_info = manager.config_file.stat()
+            assert oct(stat_info.st_mode)[-3:] == "600"
 
         # Verify content
         with open(manager.config_file) as f:
