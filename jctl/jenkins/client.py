@@ -170,7 +170,7 @@ class JenkinsClient:
             # Don't retry other HTTP errors (4xx, 5xx)
             raise JenkinsAPIError(
                 f"Jenkins API error: {e.response.status_code} - {e.response.text}"
-            )
+            ) from e
         except httpx.RequestError as e:
             logger.debug(f"Network error (will retry): {e}")
             raise  # Let tenacity handle the retry

@@ -91,7 +91,8 @@ class TestConfigManager:
 
         manager = ConfigManager(config_dir=temp_config_dir)
 
-        with pytest.raises(Exception):  # Will raise ValidationError
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
             manager.load()
 
     def test_save_config(self, temp_config_dir):
