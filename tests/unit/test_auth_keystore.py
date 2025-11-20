@@ -3,6 +3,8 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from jctl.auth.keystore import SecureKeystore
 
 
