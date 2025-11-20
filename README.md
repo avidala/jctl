@@ -40,7 +40,7 @@ After installation, you can use Tab to auto-complete:
 - Subcommands: `jctl pipeline li<Tab>` → `jctl pipeline list`
 - Options: `jctl pipeline run --<Tab>` → shows `--param`, `--wait`, `--notify`
 
-See [COMPLETION_GUIDE.md](COMPLETION_GUIDE.md) for more details and manual setup.
+See [docs/guides/COMPLETION_GUIDE.md](docs/guides/COMPLETION_GUIDE.md) for more details and manual setup.
 
 ### Initial Setup
 
@@ -79,9 +79,9 @@ You're all set! Try: jctl pipeline list
 ```
 
 **Guides:**
-- [INIT_WORKFLOW.md](INIT_WORKFLOW.md) - Detailed init workflow
-- [API_TOKEN_GUIDE.md](API_TOKEN_GUIDE.md) - How to get Jenkins API tokens
-- [OKTA_AUTH_GUIDE.md](OKTA_AUTH_GUIDE.md) - How to set up Okta OAuth
+- [docs/guides/INIT_WORKFLOW.md](docs/guides/INIT_WORKFLOW.md) - Detailed init workflow
+- [docs/guides/API_TOKEN_GUIDE.md](docs/guides/API_TOKEN_GUIDE.md) - How to get Jenkins API tokens
+- [docs/guides/OKTA_AUTH_GUIDE.md](docs/guides/OKTA_AUTH_GUIDE.md) - How to set up Okta OAuth
 
 ### Basic Usage
 
@@ -122,8 +122,8 @@ jctl --profile production auth status
 ```
 
 **Guides:**
-- [PROFILES_WITH_TOKENS.md](PROFILES_WITH_TOKENS.md) - Using profiles with API tokens (simple)
-- [PROFILES_GUIDE.md](PROFILES_GUIDE.md) - Complete profile configuration guide
+- [docs/guides/PROFILES_WITH_TOKENS.md](docs/guides/PROFILES_WITH_TOKENS.md) - Using profiles with API tokens (simple)
+- [docs/guides/PROFILES_GUIDE.md](docs/guides/PROFILES_GUIDE.md) - Complete profile configuration guide
 
 ## Command Reference
 
@@ -142,8 +142,8 @@ jctl auth logout         # Clear stored credentials
 ```
 
 **Documentation:**
-- [API Token Guide](API_TOKEN_GUIDE.md) - Quick setup with Jenkins API tokens
-- [OAuth Guide](OKTA_AUTH_GUIDE.md) - Okta SSO authentication setup
+- [API Token Guide](docs/guides/API_TOKEN_GUIDE.md) - Quick setup with Jenkins API tokens
+- [OAuth Guide](docs/guides/OKTA_AUTH_GUIDE.md) - Okta SSO authentication setup
 
 ### Job Commands
 
@@ -403,6 +403,35 @@ See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contributio
 - **Slack**: [#h2o-managed-cloud](https://h2oai.slack.com/archives/C03F53QQEBX)
 - **Team**: `@managed-cloud` group
 - **Issues**: [GitHub Issues](https://github.com/h2oai/public-cloud-infrastructure/issues)
+
+
+## 📚 Documentation
+
+### Getting Started
+- [Quick Start Guide](docs/guides/QUICK_START.md) - Get up and running in 2 minutes
+- [Installation & Setup](docs/guides/INIT_WORKFLOW.md) - Detailed setup instructions
+
+### Authentication
+- [API Token Guide](docs/guides/API_TOKEN_GUIDE.md) - Simple authentication with Jenkins API tokens
+- [Okta OAuth Guide](docs/guides/OKTA_AUTH_GUIDE.md) - Advanced SSO authentication
+
+### Configuration
+- [Multiple Profiles](docs/guides/PROFILES_GUIDE.md) - Manage dev, staging, and production
+- [Profiles with API Tokens](docs/guides/PROFILES_WITH_TOKENS.md) - Simple multi-environment setup
+
+### Advanced
+- [Shell Completion](docs/guides/COMPLETION_GUIDE.md) - Enable tab completion for faster commands
+
+### Technical Documentation
+- [Architecture](docs/ARCHITECTURE.md) - System design and architecture
+- [Development Guide](docs/DEVELOPMENT.md) - Contributing and development setup
+- [Platform Testing](docs/PLATFORM_TESTING.md) - Testing across macOS, Linux, Windows
+
+### Project Information
+- [Changelog](CHANGELOG.md) - Version history and release notes
+- [Roadmap](ROADMAP.md) - Future plans and features
+- [Contributing](CONTRIBUTING.md) - How to contribute
+- [Security](SECURITY.md) - Security policy and vulnerability reporting
 
 ## License
 
