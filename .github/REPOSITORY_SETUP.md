@@ -70,49 +70,57 @@ Updated all project URLs to point to new repository:
 - Documentation: https://github.com/avidala/jctl/blob/main/README.md
 - Changelog: https://github.com/avidala/jctl/blob/main/CHANGELOG.md
 
-## ⏳ Pending Configuration
+## ✅ Branch Configuration
 
-### Branch Protection
+### Default Branch: `develop`
+- **Purpose**: Active development and daily work
+- **Protection**: None - direct push allowed
+- **CI/CD**: All tests run on every push
 
-**Requirement**: Repository must be public OR you need GitHub Pro
+### Production Branch: `main`
+- **Purpose**: Stable production releases only
+- **Protection**: Manual (avoid direct push)
+- **Updates**: Via PR from develop only
+- **Releases**: All release tags created from main
 
-**To enable**: Make repository public
-```bash
-gh repo edit avidala/jctl --visibility public
-```
-
-Then apply branch protection settings from `.github/BRANCH_PROTECTION.md`
+**Note**: Repository remains private, so no automated branch protection. Follow manual workflow guidelines in `.github/DEVELOPMENT_WORKFLOW.md`
 
 ## Next Steps
 
-1. **Make Repository Public** (if desired)
+1. **Start Development on develop**
    ```bash
-   gh repo edit avidala/jctl --visibility public
+   git checkout develop
+   # Make changes, commit, and push directly to develop
    ```
 
-2. **Apply Branch Protection**
-   - Follow instructions in `.github/BRANCH_PROTECTION.md`
-   - Or configure via GitHub Settings > Branches
+2. **Follow Development Workflow**
+   - See `.github/DEVELOPMENT_WORKFLOW.md` for detailed guidelines
+   - Work directly on develop for daily development
+   - Use PRs from develop to main for releases
 
 3. **Verify CI/CD Workflows**
    - Check GitHub Actions tab: https://github.com/avidala/jctl/actions
-   - Ensure all workflows pass
+   - Ensure all workflows pass on develop
 
-4. **Create Develop Branch** (optional)
+4. **Review Dependabot PRs**
+   - 8+ PRs already created for dependency updates
+   - Review and merge into develop
+
+5. **When Ready for First Release**
    ```bash
-   git checkout -b develop
-   git push -u origin develop
-   ```
+   # Create PR from develop to main
+   gh pr create --base main --head develop --title "Release v0.1.0-beta.1"
 
-5. **Test PR Workflow**
-   - Create a test branch
-   - Make a small change
-   - Open a PR to verify templates and checks
-
-6. **Create First Release**
-   ```bash
+   # After merge, tag release on main
+   git checkout main
+   git pull origin main
    git tag -a v0.1.0-beta.1 -m "Beta release v0.1.0-beta.1"
    git push origin v0.1.0-beta.1
+
+   # Sync back to develop
+   git checkout develop
+   git merge main
+   git push origin develop
    ```
 
 ## GitHub Settings Recommendations
@@ -154,8 +162,9 @@ Navigate to: https://github.com/avidala/jctl/settings
 ## Documentation
 
 All configuration details documented in:
-- `.github/BRANCH_PROTECTION.md` - Branch protection setup
+- `.github/DEVELOPMENT_WORKFLOW.md` - Day-to-day development workflow (START HERE!)
 - `.github/REPOSITORY_SETUP.md` - This file
+- `.github/BRANCH_PROTECTION.md` - Branch protection setup (for public repos)
 - `MIGRATION_PLAN.md` - Overall migration plan
 
 ## Support
