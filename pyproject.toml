@@ -55,9 +55,11 @@ dev = [
 jctl = "jctl.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/h2oai/public-cloud-infrastructure"
-Issues = "https://github.com/h2oai/public-cloud-infrastructure/issues"
-Documentation = "https://github.com/h2oai/public-cloud-infrastructure/tree/main/cli/jenkins"
+Homepage = "https://github.com/avidala/jctl"
+Repository = "https://github.com/avidala/jctl"
+Issues = "https://github.com/avidala/jctl/issues"
+Documentation = "https://github.com/avidala/jctl/blob/main/README.md"
+Changelog = "https://github.com/avidala/jctl/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]

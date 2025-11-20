@@ -1,0 +1,7 @@
+# Default owner for everything
+* @avidala
+
+# Specific owners for critical areas
+/jctl/auth/ @avidala
+/jctl/config/ @avidala
+/.github/ @avidala
