@@ -13,14 +13,14 @@ class TestJenkinsClient:
     def test_init(self, mock_jenkins_url):
         """Test JenkinsClient initialization."""
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
-        assert client.jenkins_url == mock_jenkins_url
+        assert client.url == mock_jenkins_url.rstrip("/")
         assert client.username == "test-user"
-        assert client.api_token == "test-token"
+        assert client.token == "test-token"
 
     @pytest.mark.asyncio
     @patch("jctl.jenkins.client.httpx.AsyncClient")
@@ -38,9 +38,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         crumb_field, crumb_value = await client.get_crumb()
@@ -61,9 +61,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         job_info = await client.get_job_info("test-job")
@@ -85,9 +85,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         with pytest.raises(Exception) as exc_info:
@@ -125,9 +125,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         build_number = await client.trigger_job("test-job", {"param1": "value1"})
@@ -147,9 +147,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         build_info = await client.get_build_info("test-job", 42)
@@ -171,9 +171,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         log = await client.get_build_log("test-job", 42)
@@ -204,9 +204,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         await client.stop_build("test-job", 42)
@@ -235,9 +235,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         jobs = await client.list_jobs()
@@ -269,9 +269,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         workflow = await client.get_workflow_info("test-job", 42)
@@ -295,9 +295,9 @@ class TestJenkinsClient:
         mock_client_class.return_value.__aenter__.return_value = mock_client
 
         client = JenkinsClient(
-            jenkins_url=mock_jenkins_url,
+            url=mock_jenkins_url,
             username="test-user",
-            api_token="test-token",
+            token="test-token",
         )
 
         await client.list_jobs()
