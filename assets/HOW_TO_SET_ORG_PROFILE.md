@@ -1,9 +1,22 @@
-# How to Set AVIDALA Organization Profile Picture
+# How to Set AVIDALA Organization Avatar/Profile Picture
+
+> **Note**: On GitHub, the "organization avatar" and "profile picture" are the **same thing**. This is the icon that appears next to your organization name everywhere on GitHub.
+
+## What This Changes
+
+When you update the org avatar, it will appear:
+- ✅ Next to "avidala" organization name
+- ✅ On all repositories under the organization
+- ✅ In organization listings and search results
+- ✅ When you contribute as the organization
+- ✅ On the organization's main page
 
 ## Quick Steps
 
-### 1. Download the Org Avatar
+### 1. Get the Org Avatar File
 The organization avatar is ready in: `assets/org-avatar.svg`
+
+You can view it here: https://github.com/avidala/jctl/blob/develop/assets/org-avatar.svg
 
 ### 2. Convert to PNG (GitHub prefers PNG)
 
@@ -20,21 +33,40 @@ magick assets/org-avatar.svg -resize 400x400 assets/org-avatar.png
 
 ### 3. Upload to GitHub Organization
 
+**IMPORTANT**: You must be logged in as an **owner** of the avidala organization to change the avatar.
+
+#### Detailed Steps:
+
 1. **Go to organization settings**:
-   - Direct link: https://github.com/organizations/avidala/settings/profile
-   - Or: GitHub → Your organizations → avidala → Settings → Profile
+   - **Direct link**: https://github.com/organizations/avidala/settings/profile
+   - **Or navigate manually**:
+     - Go to https://github.com/avidala
+     - Click the "Settings" tab (⚙️ icon)
+     - Select "Profile" from the left sidebar
 
-2. **Upload profile picture**:
-   - Look for "Profile picture" section
-   - Click "Upload new picture" or "Edit"
-   - Select your `org-avatar.png` file
-   - Adjust the crop if needed
-   - Click "Set new profile picture"
+2. **Find the Profile Picture Section**:
+   - Look for the circular image at the top
+   - It currently shows your existing org avatar
+   - Below it says "Profile picture"
 
-3. **Result**:
-   - The new avatar will appear next to "avidala" organization name
-   - Shows in all organization repositories
-   - Displays on your profile when you contribute as the org
+3. **Upload your new avatar**:
+   - Click "Edit" or "Upload a photo" button
+   - Select your `org-avatar.png` file (400x400)
+   - A crop tool will appear - adjust if needed (usually centered is fine)
+   - Click "Set new profile picture" or "Save"
+
+4. **Verify the change**:
+   - Refresh the page
+   - The new AVIDALA logo should now show
+   - Go to https://github.com/avidala to see it on the org page
+   - Check https://github.com/avidala/jctl - it should show next to "avidala"
+
+#### What Gets Updated:
+- ✅ Organization page (https://github.com/avidala)
+- ✅ All repositories under avidala organization
+- ✅ Organization listings and search results
+- ✅ Member lists and contributor views
+- ✅ Everywhere "avidala" appears on GitHub
 
 ## Optional: Set Organization Profile Banner
 
