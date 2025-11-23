@@ -14,7 +14,9 @@ from jctl.jenkins.client import JenkinsClient
 # Current status: 3 passing, 30 failing tests
 # TODO: Rewrite tests to match current API and use proper mocking
 
-pytestmark = pytest.mark.skip(reason="Jenkins client tests need complete rewrite to match current API")
+pytestmark = pytest.mark.skip(
+    reason="Jenkins client tests need complete rewrite to match current API"
+)
 
 
 class TestJenkinsClient:

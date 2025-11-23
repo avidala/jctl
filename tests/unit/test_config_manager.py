@@ -26,7 +26,9 @@ class TestConfigManager:
         assert manager.config_dir == temp_config_dir
         assert manager.config_file == temp_config_dir / "config.yaml"
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unix file permissions don't apply on Windows")
+    @pytest.mark.skipif(
+        sys.platform == "win32", reason="Unix file permissions don't apply on Windows"
+    )
     def test_ensure_config_dir(self, temp_config_dir):
         """Test ensuring config directory exists."""
         config_dir = temp_config_dir / "new_config"
@@ -83,7 +85,9 @@ class TestConfigManager:
         assert config.default_profile == "production"
         assert "production" in config.profiles
 
-    @pytest.mark.skip(reason="Config schema now has defaults for all fields, so minimal config is valid")
+    @pytest.mark.skip(
+        reason="Config schema now has defaults for all fields, so minimal config is valid"
+    )
     def test_load_config_invalid(self, temp_config_dir):
         """Test loading invalid configuration."""
         # Create an invalid config file (missing required fields)

@@ -123,7 +123,9 @@ class TestOktaAuthenticator:
 
         assert "Failed to exchange code for tokens" in str(exc_info.value)
 
-    @pytest.mark.skip(reason="API changed: refresh_tokens() no longer takes refresh_token parameter")
+    @pytest.mark.skip(
+        reason="API changed: refresh_tokens() no longer takes refresh_token parameter"
+    )
     @pytest.mark.asyncio
     @patch("jctl.auth.okta.httpx.AsyncClient")
     async def test_refresh_tokens(self, mock_client_class, mock_okta_config, sample_tokens):
