@@ -52,38 +52,32 @@ feature-branch → PR to develop → Tests run → Merge → 🤖 Auto-create be
 
    **No manual tagging required!** ✨
 
-### 2. Beta → Production Release (Automated)
+### 2. Beta → Production Release (Fully Automated)
 
 ```
-develop → PR to main → Tests run → Merge → 🤖 Auto-create production release
+develop → PR to main → Tests run → Merge → 🤖 Auto-increment version & create release
 ```
 
 **Steps:**
 
-1. **Update version in pyproject.toml** (if not already updated):
-   ```bash
-   git checkout develop
-   # Edit pyproject.toml: version = "0.2.0"
-   git commit -am "chore: bump version to 0.2.0"
-   git push origin develop
-   ```
-
-2. **Create PR from develop to main**:
+1. **Create PR from develop to main**:
    - Open a pull request from `develop` to `main`
-   - Title: "Release v0.2.0" (or appropriate version)
+   - Title: "Release to production"
    - Description: Summarize all changes since last production release
    - Wait for CI checks to pass
 
-3. **Merge the PR**:
+2. **Merge the PR**:
    - Once approved and tests pass, merge the PR to `main`
 
-4. **🤖 Automated production release** (happens automatically):
-   - CI/CD reads version from `pyproject.toml`
-   - Creates production tag (e.g., `v0.2.0`)
+3. **🤖 Automated production release** (happens automatically):
+   - CI/CD finds the latest production tag (e.g., `v0.1.5`)
+   - Auto-increments patch version (e.g., `v0.1.5` → `v0.1.6`)
+   - Updates version in `pyproject.toml` and commits to main
+   - Creates the production tag
    - Builds the package
-   - Creates a GitHub release (not pre-release) with generated release notes
+   - Creates a GitHub release (stable) with generated release notes
 
-   **No manual tagging required!** ✨
+   **No manual version updates or tagging required!** ✨
 
 ## CI/CD Automation
 
@@ -99,22 +93,26 @@ The test workflow runs on multiple platforms and Python versions:
 
 ### Automated Releases
 
-**🎉 Releases are fully automated!** No manual tagging needed.
+**🎉 Releases are fully automated!** No manual versioning or tagging needed.
 
 #### When you merge to `develop`:
-- ✅ Reads version from `pyproject.toml` (e.g., `0.1.0`)
+- ✅ Reads base version from `pyproject.toml` (e.g., `0.1.0`)
 - ✅ Automatically increments beta number (e.g., `v0.1.0-beta.1` → `v0.1.0-beta.2`)
-- ✅ Creates and pushes the tag
+- ✅ Creates and pushes the beta tag
 - ✅ Builds the Python package
 - ✅ Creates a GitHub **pre-release** with auto-generated notes
 
 #### When you merge to `main`:
-- ✅ Reads version from `pyproject.toml` (e.g., `0.2.0`)
-- ✅ Creates production tag (e.g., `v0.2.0`)
+- ✅ Finds the latest production tag (e.g., `v0.1.5`)
+- ✅ **Auto-increments patch version** (e.g., `v0.1.5` → `v0.1.6`)
+- ✅ Updates `pyproject.toml` with new version and commits to main
+- ✅ Creates and pushes the production tag
 - ✅ Builds the Python package
-- ✅ Creates a GitHub **release** (not pre-release) with auto-generated notes
+- ✅ Creates a GitHub **release** (stable) with auto-generated notes
 
 **Smart duplicate prevention**: If a tag already exists, the workflow skips release creation.
+
+**Version strategy**: Production releases auto-increment the **patch** version. For major or minor version bumps, manually update `pyproject.toml` before merging to main.
 
 ## Branch Protection (Recommended)
 
@@ -145,21 +143,51 @@ To enforce this workflow, configure branch protection rules on GitHub:
 
 ## Version Numbering
 
-We follow [Semantic Versioning](https://semver.org/):
+We follow [Semantic Versioning](https://semver.org/) with **automatic patch version incrementing**:
 
 - **MAJOR.MINOR.PATCH** (e.g., `1.2.3`)
 - **MAJOR.MINOR.PATCH-beta.N** (e.g., `1.2.3-beta.1`)
 
-Example progression:
-```
-v0.1.0-beta.1 → develop
-v0.1.0-beta.2 → develop
-v0.1.0-beta.3 → develop
-v0.1.0        → main (production)
+### Automatic Version Progression:
 
-v0.2.0-beta.1 → develop
-v0.2.0-beta.2 → develop
-v0.2.0        → main (production)
+**Production releases** (merging to main):
+```
+v0.1.0 → v0.1.1 → v0.1.2 → v0.1.3 (auto-incremented patch)
+```
+
+**Beta releases** (merging to develop):
+```
+v0.1.0-beta.1 → v0.1.0-beta.2 → v0.1.0-beta.3 (auto-incremented beta number)
+```
+
+### Manual Version Bumps:
+
+For **major** or **minor** version changes, update `pyproject.toml` before merging to main:
+
+```bash
+# For a minor version bump (new features)
+git checkout develop
+# Edit pyproject.toml: version = "0.2.0"
+git commit -am "chore: bump minor version to 0.2.0"
+git push origin develop
+
+# Then create PR to main
+# Result: v0.2.0 (instead of auto-incremented v0.1.4)
+```
+
+Example full progression:
+```
+v0.1.0-beta.1 → develop (auto)
+v0.1.0-beta.2 → develop (auto)
+v0.1.0        → main (first production)
+v0.1.1        → main (auto-incremented)
+v0.1.2        → main (auto-incremented)
+
+# Manual bump for new features
+v0.2.0-beta.1 → develop (auto)
+v0.2.0-beta.2 → develop (auto)
+v0.2.0        → main (uses version from pyproject.toml)
+v0.2.1        → main (auto-incremented)
 ```
 
 ## Quick Reference
@@ -205,19 +233,27 @@ git push origin feature/add-completion
 # (wait for review and tests to pass, then merge)
 
 # 4. 🤖 Beta release happens automatically after merge!
+# Example: v0.1.0-beta.1 created automatically
 # Check: https://github.com/avidala/jctl/releases
 
-# 5. After more features, update version and promote to production
-git checkout develop
-# Edit pyproject.toml: version = "0.2.0"
-git commit -am "chore: bump version to 0.2.0"
-git push origin develop
-
-# 6. Open PR from develop to main on GitHub
+# 5. After more features and testing, promote to production
+# Open PR from develop to main on GitHub
 # (wait for review and tests to pass, then merge)
 
-# 7. 🤖 Production release happens automatically after merge!
+# 6. 🤖 Production release happens automatically after merge!
+# Example: v0.1.0 → v0.1.1 (auto-incremented!)
+# pyproject.toml updated automatically
 # Check: https://github.com/avidala/jctl/releases
+```
+
+**For major/minor version bumps only:**
+```bash
+# If you need v0.2.0 instead of v0.1.x
+git checkout develop
+# Edit pyproject.toml: version = "0.2.0"
+git commit -am "chore: bump minor version to 0.2.0"
+git push origin develop
+# Then create PR to main as usual
 ```
 
 ## Troubleshooting
