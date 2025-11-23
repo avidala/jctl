@@ -44,7 +44,7 @@ def init(ctx: click.Context, force: bool) -> None:
             config = manager.init_interactive_add_profile()
         else:
             # Fresh init or force overwrite
-            config = manager.init_interactive()
+            manager.init_interactive()
 
         console.print()
         console.print("[green]✓[/green] Configuration saved successfully")
@@ -85,7 +85,6 @@ def get(ctx: click.Context, key: str) -> None:
     try:
         value = manager.get_value(key)
 
-        formatter = OutputFormatter(console)
         if output_format == "plain":
             console.print(value)
         else:

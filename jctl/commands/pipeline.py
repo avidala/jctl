@@ -177,10 +177,8 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
         overall_status = "FAILED"
         status_display = "[red]✗ FAILED[/red]"
     elif result == "ABORTED":
-        overall_status = result
         status_display = "[yellow]⊗ ABORTED[/yellow]"
     else:
-        overall_status = result
         status_display = f"[dim]{result}[/dim]"
 
     # Show stages if available
