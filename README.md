@@ -1,5 +1,10 @@
 # jctl - Jenkins Control CLI
 
+[![Tests](https://github.com/avidala/jctl/workflows/Tests/badge.svg?branch=develop)](https://github.com/avidala/jctl/actions/workflows/test.yml)
+[![Lint](https://github.com/avidala/jctl/workflows/Lint/badge.svg?branch=develop)](https://github.com/avidala/jctl/actions/workflows/lint.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.
 
 ## Features
