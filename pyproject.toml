@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jctl"
 version = "0.1.0"
-description = "Jenkins CLI tool with Okta SSO authentication for H2O Managed Cloud"
+description = "A flexible Jenkins CLI tool with Okta SSO authentication"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "H2O Managed Cloud Team", email = "managed-cloud@h2o.ai"}
+    {name = "Avner Vidal", email = "avnervidal27@gmail.com"}
 ]
 keywords = ["jenkins", "cli", "okta", "sso", "devops", "automation"]
 classifiers = [

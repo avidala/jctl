@@ -462,7 +462,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 This roadmap is a living document and will be updated based on:
 - User feedback
 - Community contributions
-- H2O Managed Cloud priorities
+- Jenkins DevOps priorities
 - Industry trends
 
 **Last Reviewed**: 2025-01-20

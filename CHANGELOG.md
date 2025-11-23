@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 Initial Beta Release
 
-First beta release of jctl - Jenkins Control CLI with Okta SSO authentication for H2O Managed Cloud DevOps workflows.
+First beta release of jctl - Jenkins Control CLI with Okta SSO authentication.
 
 ### ✨ Features
 
@@ -201,7 +201,7 @@ Not applicable - initial release.
 
 ### 🙏 Acknowledgments
 
-Built by the H2O Managed Cloud Team for DevOps workflows.
+Built by the Avner Vidal for DevOps workflows.
 
 ---
 
@@ -220,9 +220,9 @@ Built by the H2O Managed Cloud Team for DevOps workflows.
 
 ## Links
 
-- **Homepage**: https://github.com/h2oai/public-cloud-infrastructure
-- **Issues**: https://github.com/h2oai/public-cloud-infrastructure/issues
-- **Documentation**: https://github.com/h2oai/public-cloud-infrastructure/tree/main/cli/jenkins
+- **Homepage**: https://github.com/avidala/jctl
+- **Issues**: https://github.com/avidala/jctl/issues
+- **Documentation**: https://github.com/avidala/jctl/tree/main/cli/jenkins
 
 ---
 
@@ -230,8 +230,7 @@ Built by the H2O Managed Cloud Team for DevOps workflows.
 
 For bug reports, feature requests, or questions:
 - Open an issue on GitHub
-- Contact the H2O Managed Cloud team
-- Slack: #h2o-managed-cloud
+- Email: avnervidal27@gmail.com
 
 ---
 

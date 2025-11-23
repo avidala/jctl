@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**jctl** (Jenkins Control CLI) is a Python command-line tool for managing Jenkins pipelines with dual authentication support (Okta OAuth 2.0 and API tokens). Built for H2O Managed Cloud DevOps workflows.
+**jctl** (Jenkins Control CLI) is a Python command-line tool for managing Jenkins pipelines with dual authentication support (Okta OAuth 2.0 and API tokens).
 
 **Key Technologies:**
 - Click 8.1.7+ (CLI framework)
@@ -161,10 +161,10 @@ default_profile: production
 profiles:
   production:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
       verify_ssl: true
     okta:
-      domain: h2oai.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
 defaults:

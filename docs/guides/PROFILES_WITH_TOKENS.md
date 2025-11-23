@@ -20,15 +20,15 @@ jctl config init
 
 # Add dev profile (API token only, no Okta)
 jctl config add-profile dev \
-  --jenkins-url https://jenkins-dev.h2oai.com
+  --jenkins-url https://jenkins-dev.example.com
 
 # Add staging profile
 jctl config add-profile stg \
-  --jenkins-url https://jenkins-stg.h2oai.com
+  --jenkins-url https://jenkins-stg.example.com
 
 # Add production profile
 jctl config add-profile prd \
-  --jenkins-url https://jenkins.h2oai.com \
+  --jenkins-url https://jenkins.example.com \
   --set-default
 ```
 
@@ -74,7 +74,7 @@ default_profile: prd
 profiles:
   dev:
     jenkins:
-      url: https://jenkins-dev.h2oai.com
+      url: https://jenkins-dev.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
@@ -90,7 +90,7 @@ profiles:
 
   stg:
     jenkins:
-      url: https://jenkins-stg.h2oai.com
+      url: https://jenkins-stg.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
@@ -106,7 +106,7 @@ profiles:
 
   prd:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
@@ -246,7 +246,7 @@ If you decide to add Okta OAuth to a profile later:
 
 ```bash
 # Update profile with Okta settings
-jctl config set dev.okta.domain h2oai-dev.okta.com
+jctl config set dev.okta.domain company-dev.okta.com
 jctl config set dev.okta.client_id jenkins-cli-dev
 
 # Then you can use OAuth
@@ -349,15 +349,15 @@ jctl config init
 # Create profiles
 echo "Setting up dev profile..."
 jctl config add-profile dev \
-  --jenkins-url https://jenkins-dev.h2oai.com
+  --jenkins-url https://jenkins-dev.example.com
 
 echo "Setting up staging profile..."
 jctl config add-profile stg \
-  --jenkins-url https://jenkins-stg.h2oai.com
+  --jenkins-url https://jenkins-stg.example.com
 
 echo "Setting up production profile..."
 jctl config add-profile prd \
-  --jenkins-url https://jenkins.h2oai.com \
+  --jenkins-url https://jenkins.example.com \
   --set-default
 
 # Authenticate

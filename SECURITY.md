@@ -52,8 +52,8 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
 Instead, please report security issues to:
-- **Email**: managed-cloud@h2o.ai
-- **Slack**: #h2o-managed-cloud (https://h2oai.slack.com/archives/C03F53QQEBX) - DM a team member
+- **Email**: avnervidal27@gmail.com
+- **Slack**: avnervidal27@gmail.com () - DM a team member
 - **Subject Line**: "SECURITY: [Brief Description]"
 
 ### What to Include
@@ -230,8 +230,8 @@ jctl does not:
 ## Contact
 
 For security-related questions or concerns:
-- **Email**: managed-cloud@h2o.ai
-- **Slack**: #h2o-managed-cloud
+- **Email**: avnervidal27@gmail.com
+- **Slack**: avnervidal27@gmail.com
 - **GitHub Issues**: For non-security bugs only
 
 ---

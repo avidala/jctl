@@ -38,7 +38,7 @@ Complete guide for setting up a development environment and contributing to jctl
 
 ```bash
 # Clone the main repository
-git clone https://github.com/h2oai/public-cloud-infrastructure.git
+git clone https://github.com/avidala/jctl.git
 cd public-cloud-infrastructure/cli/jenkins
 
 # Or clone your fork
@@ -685,7 +685,7 @@ chmod 600 ~/.jctl/config.yaml
 
 1. **Check Documentation**: README, guides, docstrings
 2. **Search Issues**: GitHub issues for similar problems
-3. **Ask Team**: Slack #h2o-managed-cloud
+3. **Ask Team**: Slack avnervidal27@gmail.com
 4. **Create Issue**: If bug or unclear documentation
 
 ## Development Tips
@@ -718,4 +718,4 @@ chmod 600 ~/.jctl/config.yaml
 
 **Document Version**: 1.0
 **Last Updated**: 2025-01-20
-**Maintained By**: H2O Managed Cloud Team
+**Maintained By**: Avner Vidal

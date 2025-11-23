@@ -1,6 +1,6 @@
 # jctl - Jenkins Control CLI
 
-A command-line interface tool for managing Jenkins pipelines with Okta SSO authentication, designed for H2O Managed Cloud DevOps workflows.
+A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.
 
 ## Features
 
@@ -67,7 +67,7 @@ jctl pipeline run <pipeline-name>
 $ jctl config init
 Profile name (production): dev
 Authentication method [1/2/token/okta] (1): 1
-Jenkins URL: https://jenkins-dev.h2oai.com
+Jenkins URL: https://jenkins-dev.example.com
 Jenkins username: avidal
 Jenkins API token: ●●●●●●●●
 
@@ -108,8 +108,8 @@ jctl supports multiple profiles for different Jenkins environments (dev, staging
 
 ```bash
 # Add profiles for different environments (API token auth only)
-jctl config add-profile dev --jenkins-url https://jenkins-dev.h2oai.com
-jctl config add-profile stg --jenkins-url https://jenkins-stg.h2oai.com
+jctl config add-profile dev --jenkins-url https://jenkins-dev.example.com
+jctl config add-profile stg --jenkins-url https://jenkins-stg.example.com
 
 # Authenticate each profile with API tokens
 jctl --profile dev auth token
@@ -217,9 +217,9 @@ default_profile: production
 profiles:
   production:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
     okta:
-      domain: h2oai.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
     output:
@@ -237,7 +237,7 @@ defaults:
 ```bash
 JCTL_PROFILE=production           # Active profile
 JCTL_JENKINS_URL=https://...      # Jenkins URL
-JCTL_OKTA_DOMAIN=h2oai.okta.com   # Okta domain
+JCTL_OKTA_DOMAIN=company.okta.com   # Okta domain
 JCTL_OUTPUT_FORMAT=json           # Output format
 JCTL_LOG_LEVEL=DEBUG              # Log level
 JCTL_NO_COLOR=1                   # Disable colors
@@ -400,9 +400,8 @@ See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contributio
 
 ## Support
 
-- **Slack**: [#h2o-managed-cloud](https://h2oai.slack.com/archives/C03F53QQEBX)
-- **Team**: `@managed-cloud` group
-- **Issues**: [GitHub Issues](https://github.com/h2oai/public-cloud-infrastructure/issues)
+- **Email**: avnervidal27@gmail.com
+- **Issues**: [GitHub Issues](https://github.com/avidala/jctl/issues)
 
 
 ## 📚 Documentation

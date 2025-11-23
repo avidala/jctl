@@ -50,7 +50,7 @@ All fully implemented and working:
 
    When prompted, enter:
    - Jenkins URL: Your Jenkins server
-   - **Okta domain**: e.g., `h2o.okta.com`
+   - **Okta domain**: e.g., `company.okta.com`
    - **Okta client ID**: Your OAuth client ID
    - Output format: table (or json/yaml)
 
@@ -119,12 +119,12 @@ jctl auth logout
 $ jctl auth login
 
 🔐 Opening browser for Okta authentication...
-    If browser doesn't open, visit: https://h2o.okta.com/oauth2/v1/authorize?...
+    If browser doesn't open, visit: https://company.okta.com/oauth2/v1/authorize?...
 
 ⏳ Waiting for authentication in browser...
 
 ✓ Successfully authenticated!
-Logged in as: john.doe@h2o.ai
+Logged in as: john.doe@example.com
 ```
 
 **Security Features:**
@@ -156,7 +156,7 @@ Authentication Status
 │ Expires In        │ 55m 23s             │
 └───────────────────┴─────────────────────┘
 
-Logged in as: john.doe@h2o.ai
+Logged in as: john.doe@example.com
 Name: John Doe
 ```
 
@@ -260,7 +260,7 @@ Your Okta configuration is stored in `~/.jctl/config.yaml`:
 profiles:
   production:
     okta:
-      domain: h2o.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
       scopes:
@@ -285,7 +285,7 @@ profiles:
 ```bash
 $ jctl auth login
 🔐 Opening browser for Okta authentication...
-    If browser doesn't open, visit: https://h2o.okta.com/oauth2/v1/authorize?...
+    If browser doesn't open, visit: https://company.okta.com/oauth2/v1/authorize?...
 ```
 Copy the URL and paste into your browser.
 

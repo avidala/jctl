@@ -179,17 +179,17 @@ def add_profile(
     Examples:
         # Profile with Okta OAuth
         jctl config add-profile dev \\
-          --jenkins-url https://jenkins-dev.h2oai.com \\
-          --okta-domain h2oai-dev.okta.com \\
+          --jenkins-url https://jenkins-dev.example.com \\
+          --okta-domain company-dev.okta.com \\
           --okta-client-id jenkins-cli-dev
 
         # Profile with only API token auth (no Okta)
         jctl config add-profile dev \\
-          --jenkins-url https://jenkins-dev.h2oai.com
+          --jenkins-url https://jenkins-dev.example.com
 
         # Set as default profile
         jctl config add-profile stg \\
-          --jenkins-url https://jenkins-stg.h2oai.com \\
+          --jenkins-url https://jenkins-stg.example.com \\
           --set-default
     """
     from jctl.config.schemas import JenkinsConfig, OktaConfig, ProfileConfig
