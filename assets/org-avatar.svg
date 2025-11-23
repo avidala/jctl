@@ -36,9 +36,9 @@
       <line x1="81" y1="67" x2="118" y2="64" stroke="url(#avatarPipe)" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
 
       <!-- Glow effects -->
-      <circle cx="11" cy="60" r="25" fill="#3b82f6" opacity="0.3" filter="blur(15px)"/>
-      <circle cx="70" cy="67" r="25" fill="#06b6d4" opacity="0.3" filter="blur(15px)"/>
-      <circle cx="129" cy="64" r="25" fill="#06b6d4" opacity="0.3" filter="blur(15px)"/>
+      <circle cx="11" cy="60" r="25" fill="#3b82f6" opacity="0.3"/>
+      <circle cx="70" cy="67" r="25" fill="#06b6d4" opacity="0.3"/>
+      <circle cx="129" cy="64" r="25" fill="#06b6d4" opacity="0.3"/>
     </g>
 
     <!-- Monogram 'AV' -->

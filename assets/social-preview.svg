@@ -36,9 +36,9 @@
       <line x1="104" y1="115" x2="160" y2="107" stroke="url(#pipeGradient)" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
 
       <!-- Glow effect -->
-      <circle cx="12" cy="100" r="30" fill="#3b82f6" opacity="0.2" filter="blur(15px)"/>
-      <circle cx="92" cy="115" r="30" fill="#06b6d4" opacity="0.2" filter="blur(15px)"/>
-      <circle cx="172" cy="107" r="30" fill="#06b6d4" opacity="0.2" filter="blur(15px)"/>
+      <circle cx="12" cy="100" r="30" fill="#3b82f6" opacity="0.2"/>
+      <circle cx="92" cy="115" r="30" fill="#06b6d4" opacity="0.2"/>
+      <circle cx="172" cy="107" r="30" fill="#06b6d4" opacity="0.2"/>
     </g>
 
     <!-- Main text: jctl -->

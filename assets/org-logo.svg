@@ -37,15 +37,15 @@
     <!-- Main pipeline structure -->
     <g transform="translate(-90, -100)">
       <!-- Left pipe -->
-      <rect x="0" y="0" width="30" height="200" rx="15" fill="url(#orgPipeGradient)" filter="url(#glow)"/>
+      <rect x="0" y="0" width="30" height="200" rx="15" fill="url(#orgPipeGradient)"/>
       <circle cx="15" cy="100" r="40" fill="#3b82f6" opacity="0.2"/>
 
       <!-- Center pipe -->
-      <rect x="75" y="30" width="30" height="170" rx="15" fill="url(#orgPipeGradient)" filter="url(#glow)"/>
+      <rect x="75" y="30" width="30" height="170" rx="15" fill="url(#orgPipeGradient)"/>
       <circle cx="90" cy="115" r="40" fill="#06b6d4" opacity="0.2"/>
 
       <!-- Right pipe -->
-      <rect x="150" y="15" width="30" height="185" rx="15" fill="url(#orgPipeGradient)" filter="url(#glow)"/>
+      <rect x="150" y="15" width="30" height="185" rx="15" fill="url(#orgPipeGradient)"/>
       <circle cx="165" cy="107" r="40" fill="#06b6d4" opacity="0.2"/>
 
       <!-- Connection lines -->

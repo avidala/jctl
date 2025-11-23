@@ -25,9 +25,9 @@
     <line x1="112" y1="146" x2="168" y2="136" stroke="url(#pipeGrad)" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
 
     <!-- Glow effects -->
-    <circle cx="14" cy="126" r="35" fill="#3b82f6" opacity="0.3" filter="blur(20px)"/>
-    <circle cx="98" cy="146" r="35" fill="#06b6d4" opacity="0.3" filter="blur(20px)"/>
-    <circle cx="182" cy="136" r="35" fill="#06b6d4" opacity="0.3" filter="blur(20px)"/>
+    <circle cx="14" cy="126" r="35" fill="#3b82f6" opacity="0.3"/>
+    <circle cx="98" cy="146" r="35" fill="#06b6d4" opacity="0.3"/>
+    <circle cx="182" cy="136" r="35" fill="#06b6d4" opacity="0.3"/>
   </g>
 
   <!-- Letter 'j' overlay (bottom) -->
