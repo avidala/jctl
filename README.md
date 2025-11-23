@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="assets/logo.svg" alt="jctl logo" width="500"/>
+
 # jctl - Jenkins Control CLI
 
 [![Tests](https://github.com/avidala/jctl/workflows/Tests/badge.svg?branch=develop)](https://github.com/avidala/jctl/actions/workflows/test.yml)
@@ -6,6 +10,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.
+
+</div>
 
 ## Features
 
