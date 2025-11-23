@@ -1,6 +1,14 @@
+<div align="center">
+
+<img src="assets/org-banner.svg" alt="AVIDALA DevOps Tools" width="100%"/>
+
+</div>
+
 # Contributing to jctl
 
 Thank you for your interest in contributing to jctl! This document provides guidelines and instructions for contributing to the project.
+
+**jctl** is part of the AVIDALA DevOps Tools suite, focused on delivering high-quality automation tools for modern DevOps workflows.
 
 ## Table of Contents
 

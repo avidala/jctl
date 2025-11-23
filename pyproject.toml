@@ -5,14 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jctl"
 version = "0.1.0"
-description = "A flexible Jenkins CLI tool with Okta SSO authentication"
+description = "A flexible Jenkins CLI tool with Okta SSO authentication - Part of AVIDALA DevOps Tools"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Avner Vidal", email = "avnervidal27@gmail.com"}
 ]
-keywords = ["jenkins", "cli", "okta", "sso", "devops", "automation"]
+maintainers = [
+    {name = "AVIDALA", email = "avnervidal27@gmail.com"}
+]
+keywords = ["jenkins", "cli", "okta", "sso", "devops", "automation", "cicd", "pipeline", "avidala"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

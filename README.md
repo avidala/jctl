@@ -1,5 +1,12 @@
 <div align="center">
 
+<!-- Organization Banner -->
+<img src="assets/org-banner.svg" alt="AVIDALA DevOps Tools" width="100%"/>
+
+<br/>
+<br/>
+
+<!-- Project Logo -->
 <img src="assets/logo.svg" alt="jctl logo" width="500"/>
 
 # jctl - Jenkins Control CLI
@@ -9,7 +16,9 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.
+**A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.**
+
+*Part of the AVIDALA DevOps Tools suite*
 
 </div>
 
@@ -446,3 +455,21 @@ See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contributio
 ## License
 
 MIT License - See [LICENSE](../../LICENSE) for details.
+
+---
+
+<div align="center">
+
+<img src="assets/org-avatar.svg" alt="AVIDALA" width="120"/>
+
+<br/>
+
+**Built by AVIDALA**
+*DevOps Tools & Automation*
+
+<br/>
+
+[![GitHub](https://img.shields.io/badge/GitHub-avidala-181717?style=flat&logo=github)](https://github.com/avidala)
+[![Email](https://img.shields.io/badge/Email-avnervidal27%40gmail.com-D14836?style=flat&logo=gmail&logoColor=white)](mailto:avnervidal27@gmail.com)
+
+</div>
