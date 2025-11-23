@@ -140,7 +140,7 @@ class SecureKeystore:
         except keyring.errors.PasswordDeleteError:
             pass  # Credential doesn't exist
         except Exception as e:
-            logger.warning(f"Failed to delete from OS keystore: {e}")
+            logger.warning(f"Failed to delete from OS keystore: {e}")  # nosec B608
 
         try:
             # Delete encrypted version
