@@ -168,13 +168,10 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
     # Map Jenkins status
     result = build_info.get("result")
     if result is None:
-        overall_status = "RUNNING"
         status_display = "[yellow]⟳ RUNNING[/yellow]"
     elif result == "SUCCESS":
-        overall_status = result
         status_display = "[green]✓ SUCCESS[/green]"
     elif result == "FAILURE":
-        overall_status = "FAILED"
         status_display = "[red]✗ FAILED[/red]"
     elif result == "ABORTED":
         status_display = "[yellow]⊗ ABORTED[/yellow]"

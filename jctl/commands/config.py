@@ -41,7 +41,7 @@ def init(ctx: click.Context, force: bool) -> None:
         # If config exists and not forcing, add a profile instead
         if manager.exists() and not force:
             console.print("[cyan]Adding new profile to existing configuration...[/cyan]\n")
-            config = manager.init_interactive_add_profile()
+            manager.init_interactive_add_profile()
         else:
             # Fresh init or force overwrite
             manager.init_interactive()
