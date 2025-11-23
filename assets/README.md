@@ -26,6 +26,22 @@ This directory contains all branding and logo assets for the jctl project.
   - Use in: GitHub social preview, Open Graph images
   - Optimized for social media sharing
 
+### Organization Branding
+- **`org-logo.svg`** - Full organization logo (600x600px)
+  - Use in: Organization profile, presentations, print materials
+  - Features: Animated pipeline, "AV" monogram, security shield
+  - Circular design with "AVIDALA" text and "DevOps Tools" subtitle
+
+- **`org-avatar.svg`** - Organization avatar (400x400px)
+  - Use as: GitHub organization profile picture
+  - Simplified square design with rounded corners
+  - Features: Pipeline icon, "AV" monogram, security shield
+
+- **`org-banner.svg`** - Organization banner (1200x300px)
+  - Use in: Website headers, email signatures, LinkedIn
+  - Features: Full branding with tech stack badges (Jenkins, Okta, Python, CLI)
+  - Horizontal layout with gradient background
+
 ## How to Set GitHub Repository Icon
 
 1. **Convert SVG to PNG** (GitHub prefers PNG):
@@ -87,6 +103,45 @@ convert -background none social-preview.svg -resize 1280x640 social-preview.png
 # - https://cloudconvert.com/svg-to-png
 # - https://svgtopng.com/
 ```
+
+## How to Set GitHub Organization Profile
+
+If you create a GitHub organization:
+
+1. **Convert org-avatar.svg to PNG**:
+   ```bash
+   # Online: https://cloudconvert.com/svg-to-png
+   # Or: magick org-avatar.svg -resize 400x400 org-avatar.png
+   ```
+
+2. **Set Organization Avatar**:
+   - Go to: https://github.com/organizations/YOUR_ORG/settings/profile
+   - Click "Upload new picture"
+   - Upload `org-avatar.png` (170x170 minimum, 400x400 recommended)
+
+3. **Set Organization Banner** (optional):
+   - Same settings page
+   - Upload `org-banner.png` (1200x300 recommended)
+
+## Design Features
+
+### Organization Logo Design Elements
+
+- **"AV" Monogram**: Your initials in bold monospace font
+- **Pipeline Icon**: Three vertical pipes representing CI/CD workflows
+- **Security Shield**: Purple-pink gradient with checkmark
+- **Animated Particles**: Data flow visualization (SVG only)
+- **Tech Stack Badges**: Jenkins, Okta, Python, CLI
+- **Color Scheme**:
+  - Primary: Blue (#3b82f6) to Cyan (#06b6d4)
+  - Accent: Purple (#8b5cf6) to Pink (#ec4899)
+  - Background: Dark slate (#1e293b, #0f172a)
+
+### Variations
+
+- **org-logo.svg**: Full featured with animations, best for presentations
+- **org-avatar.svg**: Clean, simple, perfect for profile pictures
+- **org-banner.svg**: Wide format for headers and covers
 
 ## License
 

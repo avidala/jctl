@@ -1,0 +1,106 @@
+<svg width="1200" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bannerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bannerPipe" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bannerAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="gridPattern" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#334155" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bannerBg)"/>
+  <rect width="1200" height="300" fill="url(#gridPattern)"/>
+
+  <!-- Top accent line -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#bannerAccent)"/>
+
+  <!-- Left side: Pipeline icon -->
+  <g transform="translate(100, 75)">
+    <!-- Three vertical pipes -->
+    <rect x="0" y="0" width="18" height="150" rx="9" fill="url(#bannerPipe)"/>
+    <rect x="50" y="20" width="18" height="130" rx="9" fill="url(#bannerPipe)"/>
+    <rect x="100" y="10" width="18" height="140" rx="9" fill="url(#bannerPipe)"/>
+
+    <!-- Connection lines -->
+    <line x1="18" y1="75" x2="50" y2="85" stroke="url(#bannerPipe)" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="68" y1="85" x2="100" y2="80" stroke="url(#bannerPipe)" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Glow effects -->
+    <circle cx="9" cy="75" r="30" fill="#3b82f6" opacity="0.2" filter="blur(20px)"/>
+    <circle cx="59" cy="85" r="30" fill="#06b6d4" opacity="0.2" filter="blur(20px)"/>
+    <circle cx="109" cy="80" r="30" fill="#06b6d4" opacity="0.2" filter="blur(20px)"/>
+  </g>
+
+  <!-- Center: Main text -->
+  <g transform="translate(600, 150)">
+    <!-- Organization name -->
+    <text x="0" y="0" font-family="'Courier New', 'Monaco', monospace"
+          font-size="72" font-weight="bold" fill="#f8fafc"
+          text-anchor="middle" letter-spacing="12">
+      AVIDALA
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="45" font-family="Arial, sans-serif"
+          font-size="24" fill="#94a3b8"
+          text-anchor="middle" letter-spacing="6">
+      DevOps Tools & Automation
+    </text>
+
+    <!-- Decorative underline -->
+    <line x1="-180" y1="60" x2="180" y2="60" stroke="url(#bannerPipe)" stroke-width="2" opacity="0.5"/>
+  </g>
+
+  <!-- Right side: Shield badge -->
+  <g transform="translate(1050, 150)">
+    <circle cx="0" cy="0" r="60" fill="url(#bannerPipe)" opacity="0.1"/>
+    <path d="M 0,-35 L -30,-20 L -30,15 Q -30,40 0,50 Q 30,40 30,15 L 30,-20 Z"
+          fill="url(#bannerAccent)" opacity="0.8"/>
+    <path d="M -8,2 L 0,15 L 18,-10"
+          stroke="#f8fafc" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Bottom tech stack badges -->
+  <g transform="translate(350, 240)">
+    <!-- Jenkins badge -->
+    <rect x="0" y="0" width="120" height="35" rx="17.5" fill="#3b82f6" opacity="0.2"/>
+    <text x="60" y="23" font-family="Arial" font-size="16" font-weight="600" fill="#60a5fa" text-anchor="middle">
+      Jenkins
+    </text>
+  </g>
+
+  <g transform="translate(490, 240)">
+    <!-- Okta badge -->
+    <rect x="0" y="0" width="100" height="35" rx="17.5" fill="#06b6d4" opacity="0.2"/>
+    <text x="50" y="23" font-family="Arial" font-size="16" font-weight="600" fill="#22d3ee" text-anchor="middle">
+      Okta
+    </text>
+  </g>
+
+  <g transform="translate(610, 240)">
+    <!-- Python badge -->
+    <rect x="0" y="0" width="110" height="35" rx="17.5" fill="#10b981" opacity="0.2"/>
+    <text x="55" y="23" font-family="Arial" font-size="16" font-weight="600" fill="#34d399" text-anchor="middle">
+      Python
+    </text>
+  </g>
+
+  <g transform="translate(740, 240)">
+    <!-- CLI badge -->
+    <rect x="0" y="0" width="90" height="35" rx="17.5" fill="#8b5cf6" opacity="0.2"/>
+    <text x="45" y="23" font-family="Arial" font-size="16" font-weight="600" fill="#a78bfa" text-anchor="middle">
+      CLI
+    </text>
+  </g>
+</svg>
