@@ -13,10 +13,10 @@ We use a **trunk-based development** workflow with two main branches:
 
 ## Workflow Process
 
-### 1. Feature Development → Beta Release
+### 1. Feature Development → Beta Release (Automated)
 
 ```
-feature-branch → PR to develop → Tests run → Merge → Beta release tag
+feature-branch → PR to develop → Tests run → Merge → 🤖 Auto-create beta release
 ```
 
 **Steps:**
@@ -44,35 +44,31 @@ feature-branch → PR to develop → Tests run → Merge → Beta release tag
    - Once approved and tests pass, merge the PR to `develop`
    - Delete the feature branch after merge
 
-5. **Create a beta release tag** (after merging to develop):
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git tag v0.2.0-beta.1
-   git push origin v0.2.0-beta.1
-   ```
+5. **🤖 Automated beta release** (happens automatically):
+   - CI/CD automatically reads version from `pyproject.toml`
+   - Creates incrementing beta tag (e.g., `v0.1.0-beta.1`, `v0.1.0-beta.2`, etc.)
+   - Builds the package
+   - Creates a GitHub pre-release with generated release notes
 
-   This will trigger the release workflow and create a **pre-release** on GitHub.
+   **No manual tagging required!** ✨
 
-### 2. Beta → Production Release
+### 2. Beta → Production Release (Automated)
 
 ```
-develop → PR to main → Tests run → Merge → Production release tag
+develop → PR to main → Tests run → Merge → 🤖 Auto-create production release
 ```
 
 **Steps:**
 
-1. **After several beta releases**, when ready for production, open a PR from `develop` to `main`:
+1. **Update version in pyproject.toml** (if not already updated):
    ```bash
-   # Ensure develop is up to date
    git checkout develop
-   git pull origin develop
-
-   # Push to remote if needed
+   # Edit pyproject.toml: version = "0.2.0"
+   git commit -am "chore: bump version to 0.2.0"
    git push origin develop
    ```
 
-2. **Create PR on GitHub**:
+2. **Create PR from develop to main**:
    - Open a pull request from `develop` to `main`
    - Title: "Release v0.2.0" (or appropriate version)
    - Description: Summarize all changes since last production release
@@ -81,15 +77,13 @@ develop → PR to main → Tests run → Merge → Production release tag
 3. **Merge the PR**:
    - Once approved and tests pass, merge the PR to `main`
 
-4. **Create a production release tag**:
-   ```bash
-   git checkout main
-   git pull origin main
-   git tag v0.2.0
-   git push origin v0.2.0
-   ```
+4. **🤖 Automated production release** (happens automatically):
+   - CI/CD reads version from `pyproject.toml`
+   - Creates production tag (e.g., `v0.2.0`)
+   - Builds the package
+   - Creates a GitHub release (not pre-release) with generated release notes
 
-   This will trigger the release workflow and create a **production release** on GitHub.
+   **No manual tagging required!** ✨
 
 ## CI/CD Automation
 
@@ -105,15 +99,22 @@ The test workflow runs on multiple platforms and Python versions:
 
 ### Automated Releases
 
-Releases are created automatically when you push version tags:
+**🎉 Releases are fully automated!** No manual tagging needed.
 
-- **Beta releases**: Tags containing "beta" (e.g., `v0.2.0-beta.1`)
-  - Marked as pre-release on GitHub
-  - Used for testing in development
+#### When you merge to `develop`:
+- ✅ Reads version from `pyproject.toml` (e.g., `0.1.0`)
+- ✅ Automatically increments beta number (e.g., `v0.1.0-beta.1` → `v0.1.0-beta.2`)
+- ✅ Creates and pushes the tag
+- ✅ Builds the Python package
+- ✅ Creates a GitHub **pre-release** with auto-generated notes
 
-- **Production releases**: Tags without "beta" (e.g., `v0.2.0`)
-  - Marked as latest release on GitHub
-  - Used for stable, production-ready versions
+#### When you merge to `main`:
+- ✅ Reads version from `pyproject.toml` (e.g., `0.2.0`)
+- ✅ Creates production tag (e.g., `v0.2.0`)
+- ✅ Builds the Python package
+- ✅ Creates a GitHub **release** (not pre-release) with auto-generated notes
+
+**Smart duplicate prevention**: If a tag already exists, the workflow skips release creation.
 
 ## Branch Protection (Recommended)
 
@@ -167,9 +168,9 @@ v0.2.0        → main (production)
 |--------|---------|
 | Create feature branch | `git checkout -b feature/name` |
 | Push feature | `git push origin feature/name` |
-| Create beta tag | `git tag v0.2.0-beta.1 && git push origin v0.2.0-beta.1` |
-| Create production tag | `git tag v0.2.0 && git push origin v0.2.0` |
+| Update version | Edit `version = "X.Y.Z"` in `pyproject.toml` |
 | List tags | `git tag -l` |
+| View releases | `gh release list` |
 | Delete local tag | `git tag -d v0.2.0-beta.1` |
 | Delete remote tag | `git push origin --delete v0.2.0-beta.1` |
 
@@ -203,20 +204,20 @@ git push origin feature/add-completion
 # 3. Open PR on GitHub to develop
 # (wait for review and tests to pass, then merge)
 
-# 4. Create beta release
+# 4. 🤖 Beta release happens automatically after merge!
+# Check: https://github.com/avidala/jctl/releases
+
+# 5. After more features, update version and promote to production
 git checkout develop
-git pull origin develop
-git tag v0.2.0-beta.1
-git push origin v0.2.0-beta.1
+# Edit pyproject.toml: version = "0.2.0"
+git commit -am "chore: bump version to 0.2.0"
+git push origin develop
 
-# 5. After more features, promote to production
-# (open PR from develop to main on GitHub, merge)
+# 6. Open PR from develop to main on GitHub
+# (wait for review and tests to pass, then merge)
 
-# 6. Create production release
-git checkout main
-git pull origin main
-git tag v0.2.0
-git push origin v0.2.0
+# 7. 🤖 Production release happens automatically after merge!
+# Check: https://github.com/avidala/jctl/releases
 ```
 
 ## Troubleshooting
@@ -234,13 +235,29 @@ git revert HEAD
 git push origin develop
 ```
 
-**Q: How do I delete a beta tag if I made a mistake?**
+**Q: The auto-release didn't trigger. What happened?**
+
+A: Check the Actions tab on GitHub. Common issues:
+- The workflow file might not be on the target branch yet
+- There might be a syntax error in the workflow
+- The version in `pyproject.toml` hasn't changed
+- A tag with the same version already exists
+
+**Q: How do I delete a release if I made a mistake?**
 
 A:
 ```bash
+# Delete the tag
 git tag -d v0.2.0-beta.1              # Delete locally
 git push origin --delete v0.2.0-beta.1  # Delete on GitHub
+
+# Delete the release on GitHub
+gh release delete v0.2.0-beta.1 --yes
 ```
+
+**Q: Can I manually trigger a release?**
+
+A: Yes, you can re-run the workflow from the Actions tab, or manually create and push a tag if needed.
 
 **Q: Can I push hotfixes directly to main?**
 
