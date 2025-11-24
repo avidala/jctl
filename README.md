@@ -37,8 +37,27 @@
 
 ### Installation
 
+#### Option 1: Homebrew (macOS/Linux - Recommended)
+
 ```bash
-cd cli/jenkins
+# Tap the repository and install
+brew install avidala/jctl/jctl
+
+# Verify installation
+jctl --version
+```
+
+#### Option 2: pip (All platforms)
+
+```bash
+pip install jctl
+```
+
+#### Option 3: From source
+
+```bash
+git clone https://github.com/avidala/jctl.git
+cd jctl
 pip install -e ".[dev]"
 ```
 
