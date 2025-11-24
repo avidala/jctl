@@ -219,11 +219,11 @@ class OktaAuthenticator:
         except httpx.HTTPStatusError as e:
             error_msg = f"Token exchange failed: {e.response.status_code} - {e.response.text}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
         except Exception as e:
             error_msg = f"Authentication failed: {e}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
 
     def refresh_tokens(self) -> dict[str, Any]:
         """Refresh access token using refresh token.
@@ -271,11 +271,11 @@ class OktaAuthenticator:
         except httpx.HTTPStatusError as e:
             error_msg = f"Token refresh failed: {e.response.status_code} - {e.response.text}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
         except Exception as e:
             error_msg = f"Token refresh failed: {e}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
 
     def get_user_info(self) -> dict[str, Any]:
         """Get user information from Okta.
@@ -300,11 +300,11 @@ class OktaAuthenticator:
         except httpx.HTTPStatusError as e:
             error_msg = f"Failed to get user info: {e.response.status_code}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
         except Exception as e:
             error_msg = f"Failed to get user info: {e}"
             logger.error(error_msg)
-            raise OktaAuthError(error_msg)
+            raise OktaAuthError(error_msg) from e
 
     def logout(self) -> None:
         """Logout and clear stored tokens."""

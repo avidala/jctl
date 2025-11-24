@@ -1,0 +1,110 @@
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="orgBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orgPipeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orgAccentGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle with border -->
+  <circle cx="300" cy="300" r="290" fill="url(#orgBgGradient)" stroke="url(#orgPipeGradient)" stroke-width="3" opacity="0.95"/>
+
+  <!-- Outer ring decoration -->
+  <circle cx="300" cy="300" r="270" fill="none" stroke="url(#orgPipeGradient)" stroke-width="2" opacity="0.3" stroke-dasharray="10 15"/>
+
+  <!-- Central emblem -->
+  <g transform="translate(300, 300)">
+
+    <!-- Background hexagon -->
+    <path d="M 0,-120 L 104,-60 L 104,60 L 0,120 L -104,60 L -104,-60 Z"
+          fill="url(#orgPipeGradient)" opacity="0.1"/>
+
+    <!-- Main pipeline structure -->
+    <g transform="translate(-90, -100)">
+      <!-- Left pipe -->
+      <rect x="0" y="0" width="30" height="200" rx="15" fill="url(#orgPipeGradient)"/>
+      <circle cx="15" cy="100" r="40" fill="#3b82f6" opacity="0.2"/>
+
+      <!-- Center pipe -->
+      <rect x="75" y="30" width="30" height="170" rx="15" fill="url(#orgPipeGradient)"/>
+      <circle cx="90" cy="115" r="40" fill="#06b6d4" opacity="0.2"/>
+
+      <!-- Right pipe -->
+      <rect x="150" y="15" width="30" height="185" rx="15" fill="url(#orgPipeGradient)"/>
+      <circle cx="165" cy="107" r="40" fill="#06b6d4" opacity="0.2"/>
+
+      <!-- Connection lines -->
+      <line x1="30" y1="100" x2="75" y2="115"
+            stroke="url(#orgPipeGradient)" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+      <line x1="105" y1="115" x2="150" y2="107"
+            stroke="url(#orgPipeGradient)" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+
+      <!-- Data flow particles -->
+      <circle cx="15" cy="50" r="5" fill="#60a5fa" opacity="0.8">
+        <animate attributeName="cy" values="50;150;50" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="90" cy="80" r="5" fill="#22d3ee" opacity="0.8">
+        <animate attributeName="cy" values="80;180;80" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="165" cy="60" r="5" fill="#22d3ee" opacity="0.8">
+        <animate attributeName="cy" values="60;185;60" dur="2.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.8s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Text 'AV' monogram (overlaid) -->
+    <text x="0" y="25" font-family="'Courier New', 'Monaco', monospace"
+          font-size="140" font-weight="bold" fill="#f8fafc"
+          text-anchor="middle" opacity="0.15" letter-spacing="10">
+      AV
+    </text>
+
+    <!-- Security shield (bottom) -->
+    <g transform="translate(0, 160)">
+      <path d="M 0,-30 L -25,-15 L -25,15 Q -25,35 0,45 Q 25,35 25,15 L 25,-15 Z"
+            fill="url(#orgAccentGradient)" opacity="0.8"/>
+      <path d="M -5,0 L 0,8 L 12,-8"
+            stroke="#f8fafc" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Corner accents -->
+    <g opacity="0.4">
+      <circle cx="-180" cy="-180" r="8" fill="url(#orgPipeGradient)"/>
+      <circle cx="180" cy="-180" r="8" fill="url(#orgPipeGradient)"/>
+      <circle cx="-180" cy="180" r="8" fill="url(#orgPipeGradient)"/>
+      <circle cx="180" cy="180" r="8" fill="url(#orgPipeGradient)"/>
+    </g>
+
+  </g>
+
+  <!-- Bottom text -->
+  <text x="300" y="540" font-family="'Courier New', 'Monaco', monospace"
+        font-size="36" font-weight="bold" fill="#f8fafc"
+        text-anchor="middle" letter-spacing="6">
+    AVIDALA
+  </text>
+
+  <!-- Subtitle -->
+  <text x="300" y="570" font-family="Arial, sans-serif"
+        font-size="18" fill="#94a3b8"
+        text-anchor="middle" letter-spacing="3">
+    DevOps Tools
+  </text>
+</svg>

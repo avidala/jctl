@@ -20,8 +20,6 @@ class APITokenAuthenticator:
             username: Jenkins username (your email)
             token: Jenkins API token
         """
-        credentials = {"username": username, "token": token}
-
         # Store individually for easier retrieval
         self.keystore.store("jenkins_username", username)
         self.keystore.store("jenkins_token", token)

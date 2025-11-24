@@ -41,7 +41,7 @@ sudo apt install gnome-keyring libsecret-1-0 libsecret-1-dev -y
 #### Installation
 ```bash
 # Clone repository
-git clone https://github.com/h2oai/public-cloud-infrastructure.git
+git clone https://github.com/avidala/jctl.git
 cd public-cloud-infrastructure/cli/jenkins
 
 # Create virtual environment
@@ -124,7 +124,7 @@ pip --version
 #### Installation
 ```powershell
 # Clone repository
-git clone https://github.com/h2oai/public-cloud-infrastructure.git
+git clone https://github.com/avidala/jctl.git
 cd public-cloud-infrastructure\cli\jenkins
 
 # Create virtual environment
@@ -240,7 +240,7 @@ docker run -it --rm ubuntu:22.04 /bin/bash
 
 # Inside container
 apt update && apt install -y python3.10 python3.10-venv git
-git clone https://github.com/h2oai/public-cloud-infrastructure.git
+git clone https://github.com/avidala/jctl.git
 cd public-cloud-infrastructure/cli/jenkins
 python3.10 -m venv venv
 source venv/bin/activate

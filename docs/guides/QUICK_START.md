@@ -15,7 +15,7 @@ jctl config init
 # Follow the prompts:
 # - Profile name: dev (or stg, prd, production, etc.)
 # - Auth method: 1 (API Token)
-# - Jenkins URL: https://jenkins-dev.h2oai.com
+# - Jenkins URL: https://jenkins-dev.example.com
 # - Username: your-username
 # - API Token: your-token
 
@@ -97,7 +97,7 @@ jctl pipeline cancel managed-cloud/hamc-upgrade-pipeline 123
 jctl config init
 # Profile name: stg
 # Auth method: 1 (API Token)
-# Jenkins URL: https://jenkins-stg.h2oai.com
+# Jenkins URL: https://jenkins-stg.example.com
 # Username & token
 # Set as default? [y/n]: n
 
@@ -105,7 +105,7 @@ jctl config init
 jctl config init
 # Profile name: prd
 # Auth method: 1
-# Jenkins URL: https://jenkins.h2oai.com
+# Jenkins URL: https://jenkins.example.com
 # Username & token
 # Set as default? [y/n]: y
 ```
@@ -114,11 +114,11 @@ jctl config init
 
 ```bash
 # Add staging
-jctl config add-profile stg --jenkins-url https://jenkins-stg.h2oai.com
+jctl config add-profile stg --jenkins-url https://jenkins-stg.example.com
 jctl --profile stg auth token
 
 # Add production
-jctl config add-profile prd --jenkins-url https://jenkins.h2oai.com --set-default
+jctl config add-profile prd --jenkins-url https://jenkins.example.com --set-default
 jctl --profile prd auth token
 ```
 
@@ -245,14 +245,14 @@ jctl pipeline list --filter "upgrade"
 # 1. Initialize jctl with dev profile
 jctl config init
 # Profile: dev
-# Jenkins URL: https://jenkins-dev.h2oai.com
+# Jenkins URL: https://jenkins-dev.example.com
 # Username & token
 
 # 2. Add other environments
-jctl config add-profile stg --jenkins-url https://jenkins-stg.h2oai.com
+jctl config add-profile stg --jenkins-url https://jenkins-stg.example.com
 jctl --profile stg auth token
 
-jctl config add-profile prd --jenkins-url https://jenkins.h2oai.com --set-default
+jctl config add-profile prd --jenkins-url https://jenkins.example.com --set-default
 jctl --profile prd auth token
 
 # 3. Enable completion

@@ -14,8 +14,8 @@ For long-term production use, OAuth 2.0 (Okta SSO) is recommended, but API token
 ### Step 1: Log into Jenkins
 
 Navigate to your Jenkins instance:
-- **Staging**: https://jenkins-stg.managed-cloud.h2o.dev/
-- **Production**: https://jenkins.h2oai.com/
+- **Staging**: https://jenkins-stg.example.com/
+- **Production**: https://jenkins.example.com/
 
 Log in with your H2O.ai Okta credentials (via SSO).
 
@@ -68,11 +68,11 @@ You can get your API token from Jenkins:
   3. Scroll to 'API Token' → Add new Token
   4. Copy the generated token
 
-Jenkins username (email): your.email@h2o.ai
+Jenkins username (email): your.email@example.com
 Jenkins API token: [hidden input]
 
 ✓ API token configured successfully!
-Username: your.email@h2o.ai
+Username: your.email@example.com
 
 You can now use Jenkins commands:
   jctl pipeline list
@@ -89,7 +89,7 @@ The token is securely stored in your OS keychain:
 You can also provide credentials directly:
 
 ```bash
-jctl auth token --username your.email@h2o.ai --token 11a1b2c3d4e5f67890abcdef1234567890
+jctl auth token --username your.email@example.com --token 11a1b2c3d4e5f67890abcdef1234567890
 ```
 
 **Warning**: The token will be visible in your shell history. Interactive mode is safer.
@@ -112,7 +112,7 @@ Authentication Status
 ┃ Property ┃ Value                     ┃
 ┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ Status   │ ✓ Configured              │
-│ Username │ your.email@h2o.ai         │
+│ Username │ your.email@example.com         │
 │ Has Token│ ✓                         │
 └──────────┴───────────────────────────┘
 ```
@@ -275,7 +275,7 @@ This clears all stored credentials (both API tokens and OAuth tokens).
    ```
 3. Test connectivity:
    ```bash
-   curl -I https://jenkins-stg.managed-cloud.h2o.dev/
+   curl -I https://jenkins-stg.example.com/
    ```
 
 ## API Token vs OAuth
@@ -349,7 +349,7 @@ If you encounter issues:
 1. Check authentication status: `jctl auth status`
 2. Enable debug mode: `jctl --debug auth token`
 3. Review logs: `~/.jctl/logs/jctl.log`
-4. Check Slack: `#h2o-managed-cloud` channel
+4. Check Slack: `avnervidal27@gmail.com` channel
 5. Contact: Cloud Engineering team (@managed-cloud)
 
 ## Quick Reference

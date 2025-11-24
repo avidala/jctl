@@ -27,8 +27,7 @@ console = Console()
 def cli(ctx: click.Context, profile: str | None, debug: bool, output: str) -> None:
     """jctl - Jenkins Control CLI.
 
-    Manage Jenkins pipelines with Okta SSO authentication.
-    Built for H2O Managed Cloud DevOps workflows.
+    A flexible tool for managing Jenkins pipelines with Okta SSO authentication.
     """
     # Setup logging based on debug flag
     log_level = "DEBUG" if debug else "INFO"

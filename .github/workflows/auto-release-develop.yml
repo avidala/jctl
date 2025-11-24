@@ -1,0 +1,82 @@
+name: Auto Release (Develop)
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  auto-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Get latest beta tag
+        id: get_beta
+        run: |
+          # Get the latest beta tag for this version
+          LATEST_BETA=$(git tag -l "v${{ steps.get_version.outputs.version }}-beta.*" | sort -V | tail -n1)
+
+          if [ -z "$LATEST_BETA" ]; then
+            # No beta tag exists, start with beta.1
+            BETA_NUM=1
+          else
+            # Extract beta number and increment
+            BETA_NUM=$(echo "$LATEST_BETA" | grep -Po '(?<=beta\.)\d+')
+            BETA_NUM=$((BETA_NUM + 1))
+          fi
+
+          NEW_TAG="v${{ steps.get_version.outputs.version }}-beta.$BETA_NUM"
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "New beta tag: $NEW_TAG"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git rev-parse "${{ steps.get_beta.outputs.new_tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag already exists, skipping release"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag does not exist, proceeding with release"
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.get_beta.outputs.new_tag }}" -m "Beta release ${{ steps.get_beta.outputs.new_tag }}"
+          git push origin "${{ steps.get_beta.outputs.new_tag }}"
+
+      - uses: actions/setup-python@v6
+        if: steps.check_tag.outputs.exists == 'false'
+        with:
+          python-version: '3.10'
+
+      - name: Build package
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          pip install build
+          python -m build
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_beta.outputs.new_tag }}
+          name: ${{ steps.get_beta.outputs.new_tag }}
+          files: dist/*
+          generate_release_notes: true
+          prerelease: true

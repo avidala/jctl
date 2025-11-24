@@ -53,12 +53,12 @@ profiles:
   # Development environment
   dev:
     jenkins:
-      url: https://jenkins-dev.h2oai.com
+      url: https://jenkins-dev.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
     okta:
-      domain: h2oai-dev.okta.com
+      domain: company-dev.okta.com
       client_id: jenkins-cli-dev
       redirect_uri: http://localhost:8989/callback
       scopes:
@@ -75,12 +75,12 @@ profiles:
   # Staging environment
   stg:
     jenkins:
-      url: https://jenkins-stg.h2oai.com
+      url: https://jenkins-stg.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
     okta:
-      domain: h2oai-stg.okta.com
+      domain: company-stg.okta.com
       client_id: jenkins-cli-stg
       redirect_uri: http://localhost:8989/callback
       scopes:
@@ -97,12 +97,12 @@ profiles:
   # Production environment
   production:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
     okta:
-      domain: h2oai.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
       scopes:
@@ -198,10 +198,10 @@ Update profile settings using dot notation:
 jctl config set default_profile dev
 
 # Update dev Jenkins URL
-jctl config set dev.jenkins.url https://jenkins-dev-new.h2oai.com
+jctl config set dev.jenkins.url https://jenkins-dev-new.example.com
 
 # Update staging Okta domain
-jctl config set stg.okta.domain h2oai-staging.okta.com
+jctl config set stg.okta.domain company-staging.okta.com
 
 # Change production output format
 jctl config set production.output.format json
@@ -213,8 +213,8 @@ To add a new profile, manually edit the config file or use set commands:
 
 ```bash
 # Add a new profile by setting its Jenkins URL
-jctl config set profiles.uat.jenkins.url https://jenkins-uat.h2oai.com
-jctl config set profiles.uat.okta.domain h2oai-uat.okta.com
+jctl config set profiles.uat.jenkins.url https://jenkins-uat.example.com
+jctl config set profiles.uat.okta.domain company-uat.okta.com
 jctl config set profiles.uat.okta.client_id jenkins-cli-uat
 ```
 
@@ -278,7 +278,7 @@ export JCTL_PROFILE=dev
 jctl pipeline list  # Uses dev profile
 
 # Override Jenkins URL
-export JCTL_JENKINS_URL=https://jenkins-custom.h2oai.com
+export JCTL_JENKINS_URL=https://jenkins-custom.example.com
 jctl pipeline list  # Uses custom URL
 
 # Override output format

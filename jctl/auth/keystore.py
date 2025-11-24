@@ -88,7 +88,7 @@ class SecureKeystore:
                 keyring.set_password(SERVICE_NAME, f"{key}_encrypted", encrypted.decode())
                 logger.debug(f"Stored encrypted credential '{key}'")
             except Exception as e2:
-                raise KeystoreError(f"Failed to store credential: {e2}")
+                raise KeystoreError(f"Failed to store credential: {e2}") from e2
 
     def retrieve(self, key: str) -> str | None:
         """Retrieve a credential.
@@ -140,7 +140,7 @@ class SecureKeystore:
         except keyring.errors.PasswordDeleteError:
             pass  # Credential doesn't exist
         except Exception as e:
-            logger.warning(f"Failed to delete from OS keystore: {e}")
+            logger.warning(f"Failed to delete from OS keystore: {e}")  # nosec B608
 
         try:
             # Delete encrypted version
@@ -165,7 +165,7 @@ class SecureKeystore:
             self.store("tokens", tokens_json)
             logger.info("Stored authentication tokens")
         except Exception as e:
-            raise KeystoreError(f"Failed to store tokens: {e}")
+            raise KeystoreError(f"Failed to store tokens: {e}") from e
 
     def retrieve_tokens(self) -> dict[str, Any] | None:
         """Retrieve authentication tokens.

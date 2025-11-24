@@ -9,9 +9,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
 
@@ -20,8 +20,20 @@ jobs:
           pip install build
           python -m build
 
+      - name: Determine release type
+        id: release_type
+        run: |
+          if [[ "${{ github.ref_name }}" == *"beta"* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "Release type: Beta"
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+            echo "Release type: Production"
+          fi
+
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*
           generate_release_notes: true
+          prerelease: ${{ steps.release_type.outputs.prerelease }}

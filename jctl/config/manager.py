@@ -173,8 +173,8 @@ class ConfigManager:
         """
         # Create default profile
         default_profile = ProfileConfig(
-            jenkins=JenkinsConfig(url="https://jenkins.h2oai.com"),
-            okta=OktaConfig(domain="h2oai.okta.com", client_id="jenkins-cli"),
+            jenkins=JenkinsConfig(url="https://jenkins.example.com"),
+            okta=OktaConfig(domain="company.okta.com", client_id="jenkins-cli"),
         )
 
         config = Config(
@@ -222,12 +222,12 @@ class ConfigManager:
 
         # Get Jenkins URL
         console.print()
-        jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.h2oai.com")
+        jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.example.com")
 
         # Get Okta configuration only if using OAuth
         if use_okta:
             console.print("\n[cyan]Okta OAuth Configuration:[/cyan]")
-            okta_domain = Prompt.ask("Okta domain", default="h2oai.okta.com")
+            okta_domain = Prompt.ask("Okta domain", default="company.okta.com")
             okta_client_id = Prompt.ask("Okta client ID", default="jenkins-cli")
             # Only ask about SSL for OAuth since it's more complex
             verify_ssl = Confirm.ask("\nVerify SSL certificates?", default=True)
@@ -347,12 +347,12 @@ class ConfigManager:
 
         # Get Jenkins URL
         console.print()
-        jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.h2oai.com")
+        jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.example.com")
 
         # Get Okta configuration only if using OAuth
         if use_okta:
             console.print("\n[cyan]Okta OAuth Configuration:[/cyan]")
-            okta_domain = Prompt.ask("Okta domain", default="h2oai.okta.com")
+            okta_domain = Prompt.ask("Okta domain", default="company.okta.com")
             okta_client_id = Prompt.ask("Okta client ID", default="jenkins-cli")
             # Only ask about SSL for OAuth since it's more complex
             verify_ssl = Confirm.ask("\nVerify SSL certificates?", default=True)

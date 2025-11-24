@@ -41,10 +41,10 @@ def init(ctx: click.Context, force: bool) -> None:
         # If config exists and not forcing, add a profile instead
         if manager.exists() and not force:
             console.print("[cyan]Adding new profile to existing configuration...[/cyan]\n")
-            config = manager.init_interactive_add_profile()
+            manager.init_interactive_add_profile()
         else:
             # Fresh init or force overwrite
-            config = manager.init_interactive()
+            manager.init_interactive()
 
         console.print()
         console.print("[green]✓[/green] Configuration saved successfully")
@@ -85,7 +85,6 @@ def get(ctx: click.Context, key: str) -> None:
     try:
         value = manager.get_value(key)
 
-        formatter = OutputFormatter(console)
         if output_format == "plain":
             console.print(value)
         else:
@@ -180,17 +179,17 @@ def add_profile(
     Examples:
         # Profile with Okta OAuth
         jctl config add-profile dev \\
-          --jenkins-url https://jenkins-dev.h2oai.com \\
-          --okta-domain h2oai-dev.okta.com \\
+          --jenkins-url https://jenkins-dev.example.com \\
+          --okta-domain company-dev.okta.com \\
           --okta-client-id jenkins-cli-dev
 
         # Profile with only API token auth (no Okta)
         jctl config add-profile dev \\
-          --jenkins-url https://jenkins-dev.h2oai.com
+          --jenkins-url https://jenkins-dev.example.com
 
         # Set as default profile
         jctl config add-profile stg \\
-          --jenkins-url https://jenkins-stg.h2oai.com \\
+          --jenkins-url https://jenkins-stg.example.com \\
           --set-default
     """
     from jctl.config.schemas import JenkinsConfig, OktaConfig, ProfileConfig

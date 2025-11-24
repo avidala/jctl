@@ -1,6 +1,14 @@
+<div align="center">
+
+<img src="assets/org-banner.svg" alt="AVIDALA DevOps Tools" width="100%"/>
+
+</div>
+
 # Contributing to jctl
 
 Thank you for your interest in contributing to jctl! This document provides guidelines and instructions for contributing to the project.
+
+**jctl** is part of the AVIDALA DevOps Tools suite, focused on delivering high-quality automation tools for modern DevOps workflows.
 
 ## Table of Contents
 
@@ -46,7 +54,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 ### Finding Issues to Work On
 
-1. Check the [GitHub Issues](https://github.com/h2oai/public-cloud-infrastructure/issues) page
+1. Check the [GitHub Issues](https://github.com/avidala/jctl/issues) page
 2. Look for issues labeled:
    - `good first issue` - Great for newcomers
    - `help wanted` - We need community assistance
@@ -489,14 +497,14 @@ We follow [Semantic Versioning](https://semver.org/):
 
 - **GitHub Issues**: Bug reports, feature requests
 - **Pull Requests**: Code contributions, discussions
-- **Slack**: #h2o-managed-cloud (https://h2oai.slack.com/archives/C03F53QQEBX)
-- **Email**: managed-cloud@h2o.ai
+- **Slack**: avnervidal27@gmail.com ()
+- **Email**: avnervidal27@gmail.com
 
 ### Getting Help
 
 - Check existing documentation
 - Search closed issues for similar problems
-- Ask in Slack #h2o-managed-cloud
+- Email: avnervidal27@gmail.com
 - Mention `@managed-cloud` team for urgent issues
 
 ## Recognition
@@ -515,8 +523,8 @@ By contributing to jctl, you agree that your contributions will be licensed unde
 
 If you have questions about contributing:
 - Open a GitHub Discussion
-- Ask in Slack #h2o-managed-cloud
-- Email the team at managed-cloud@h2o.ai
+- Email: avnervidal27@gmail.com
+- Email the team at avnervidal27@gmail.com
 
 ---
 

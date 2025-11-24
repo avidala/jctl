@@ -15,7 +15,7 @@ This document describes the architecture, design decisions, and technical implem
 
 ## Overview
 
-jctl is a command-line interface tool designed for managing Jenkins pipelines with Okta SSO authentication, specifically optimized for H2O Managed Cloud DevOps workflows.
+jctl is a command-line interface tool designed for managing Jenkins pipelines with Okta SSO authentication, specifically optimized for Jenkins DevOps DevOps workflows.
 
 ### Key Design Goals
 
@@ -282,10 +282,10 @@ default_profile: production
 profiles:
   production:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
       verify_ssl: true
     okta:
-      domain: h2oai.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
       scopes:

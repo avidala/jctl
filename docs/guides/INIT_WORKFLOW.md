@@ -22,7 +22,7 @@ Choose authentication method:
 
 Authentication method [1/2/token/okta] (1): 1
 
-Jenkins URL (https://jenkins.h2oai.com): https://jenkins-dev.h2oai.com
+Jenkins URL (https://jenkins.example.com): https://jenkins-dev.example.com
 
 ✓ Configuration saved to: /Users/avnervidal/.jctl/config.yaml
 ✓ Profile 'dev' created and set as default
@@ -63,10 +63,10 @@ Choose authentication method:
 
 Authentication method [1/2/token/okta] (1): 2
 
-Jenkins URL (https://jenkins.h2oai.com): https://jenkins.h2oai.com
+Jenkins URL (https://jenkins.example.com): https://jenkins.example.com
 
 Okta OAuth Configuration:
-Okta domain (h2oai.okta.com): h2oai.okta.com
+Okta domain (company.okta.com): company.okta.com
 Okta client ID (jenkins-cli): jenkins-cli
 
 Verify SSL certificates? [y/n] (y): y
@@ -102,7 +102,7 @@ default_profile: production
 profiles:
   production:
     jenkins:
-      url: https://jenkins-dev.h2oai.com
+      url: https://jenkins-dev.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
@@ -139,12 +139,12 @@ default_profile: production
 profiles:
   production:
     jenkins:
-      url: https://jenkins.h2oai.com
+      url: https://jenkins.example.com
       api_version: '2.0'
       verify_ssl: true
       timeout: 30
     okta:
-      domain: h2oai.okta.com
+      domain: company.okta.com
       client_id: jenkins-cli
       redirect_uri: http://localhost:8989/callback
       scopes:
@@ -203,12 +203,12 @@ After initial setup, you can add more profiles with different auth methods:
 
 ```bash
 # Add dev profile with API token only
-jctl config add-profile dev --jenkins-url https://jenkins-dev.h2oai.com
+jctl config add-profile dev --jenkins-url https://jenkins-dev.example.com
 
 # Add staging profile with Okta
 jctl config add-profile stg \
-  --jenkins-url https://jenkins-stg.h2oai.com \
-  --okta-domain h2oai-stg.okta.com \
+  --jenkins-url https://jenkins-stg.example.com \
+  --okta-domain company-stg.okta.com \
   --okta-client-id jenkins-cli-stg
 ```
 
@@ -238,7 +238,7 @@ You can add Okta configuration to an API token profile later:
 
 ```bash
 # Update existing profile with Okta settings
-jctl config set production.okta.domain h2oai.okta.com
+jctl config set production.okta.domain company.okta.com
 jctl config set production.okta.client_id jenkins-cli
 ```
 
@@ -249,7 +249,7 @@ Use `jctl config add-profile` for non-interactive profile creation:
 ```bash
 # Non-interactive profile creation
 jctl config add-profile production \
-  --jenkins-url https://jenkins.h2oai.com
+  --jenkins-url https://jenkins.example.com
 ```
 
 ## Complete Multi-Environment Setup
@@ -261,18 +261,18 @@ Here's how to set up dev, staging, and production in one go:
 jctl config init
 # Profile name: dev
 # Auth method: 1 (API Token)
-# Jenkins URL: https://jenkins-dev.h2oai.com
+# Jenkins URL: https://jenkins-dev.example.com
 # Username: avidal
 # Token: <your-dev-token>
 
 # 2. Add staging
-jctl config add-profile stg --jenkins-url https://jenkins-stg.h2oai.com
+jctl config add-profile stg --jenkins-url https://jenkins-stg.example.com
 jctl --profile stg auth token
 # Username: avidal
 # Token: <your-stg-token>
 
 # 3. Add production
-jctl config add-profile prd --jenkins-url https://jenkins.h2oai.com --set-default
+jctl config add-profile prd --jenkins-url https://jenkins.example.com --set-default
 jctl --profile prd auth token
 # Username: avidal
 # Token: <your-prd-token>
