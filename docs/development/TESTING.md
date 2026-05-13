@@ -15,7 +15,8 @@ The jctl project uses pytest for testing with the following setup:
 ### Install Test Dependencies
 
 ```bash
-pip install -r requirements-dev.txt
+# `dev` extra in pyproject.toml installs pytest, pytest-cov, etc.
+pip install -e ".[dev]"
 ```
 
 ### Run All Tests
@@ -169,18 +170,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: pip install -e ".[dev]"
       - name: Run tests
         run: pytest tests/ --cov=jctl --cov-report=xml
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
 ```
 
 ## Test Best Practices

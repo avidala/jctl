@@ -201,9 +201,14 @@ tests/
 ```
 
 ### Coverage Goals
-- Unit tests: 80%+ coverage
-- Test edge cases and error conditions
-- Security-critical paths (authentication) need thorough testing
+- Current coverage is ~14% (auth + config + jenkins client only). The
+  long-term target is 80% — see the "Test Suite" item in `ROADMAP.md`.
+- New code in `jctl/commands/`, `jctl/utils/`, or `jctl/cli.py` should
+  ship with unit tests so we stop the bleeding even while back-fill is
+  pending.
+- Security-critical paths (authentication, keystore, token manager)
+  must be tested thoroughly — they are the only paths currently above
+  the project average.
 
 ### Running Tests
 - Use pytest with `-v` for verbose output
@@ -289,4 +294,6 @@ tests/
 - **Fast**: Async operations, caching, optimized for common workflows
 - **Reliable**: Retry logic, proper error handling, robust API integration
 - **Extensible**: Modular design for easy feature additions
-- **Well-Tested**: High coverage, unit + integration tests
+- **Well-Tested (in progress)**: security-critical paths (auth, keystore,
+  Jenkins client) are unit-tested; broader CLI command and utility
+  coverage is still being built out.

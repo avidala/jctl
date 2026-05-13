@@ -13,6 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `LICENSE` file at the repo root (MIT). `pyproject.toml` already declared `license = "MIT"` and the README had the badge — only the file itself was missing, which blocked Homebrew/PyPI license validation.
+- `Python 3.13` added to the CI test matrix. Coverage now matches the Homebrew formula which installs onto `python@3.13`.
+- Advisory `typecheck` job in `.github/workflows/lint.yml` that runs `mypy jctl/` with `continue-on-error: true`. Type drift is now visible in CI without blocking PRs; flip the flag once the codebase is fully typed.
+
+### Changed
+
+- `README.md`: removed internal `hamc-*` Jenkins job names from the usage examples — replaced with generic `deploy-staging`, `provision-environment`, etc., so the docs don't leak project-internal pipeline naming.
+- `CLAUDE.md`: corrected the claim that the project has 80%+ unit test coverage. Actual coverage is ~14% (auth + config + jenkins client). Roadmap target unchanged; reality now documented.
+- `SECURITY.md`: replaced a broken placeholder Slack line with a working private-disclosure path. Preferred channel is now a private GitHub Security Advisory; email is the backup.
+- `softprops/action-gh-release` pinned to a commit SHA (`da05d55…` / v2.2.2) across the three release workflows, per supply-chain hardening guidance for third-party actions.
+- `bump-homebrew-formula.yml` now uses `actions/checkout@v6`, matching every other workflow in the repo.
+
+### Removed
+
+- `requirements.txt` and `requirements-dev.txt`. They had drifted from `pyproject.toml` (e.g. `httpx>=0.25.2,<0.28` in requirements vs. `<0.29` in pyproject, with the Homebrew formula actually shipping `0.28.1`). `pyproject.toml` is the single source of truth; `pip install -e ".[dev]"` is the supported install path. `docs/DEVELOPMENT.md` and `docs/development/TESTING.md` updated to match.
+- `scripts/install.sh` and `scripts/jctl-wrapper.sh`. These were the pre-Homebrew install path (shell alias pointing at a venv); now superseded by `brew install` and `pipx install` and referenced by no docs.
+
 ### Docs
 
 - Fix install instructions: `pip install jctl` was pointing users at an unrelated Jamf Pro CRUD package owned by another author on PyPI. README now recommends Homebrew or `pipx install` from the git tag, and `ROADMAP.md` flags that a future PyPI release must use a non-colliding name (e.g. `avidala-jctl`).
