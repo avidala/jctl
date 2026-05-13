@@ -39,23 +39,23 @@ jctl pipe<Tab>  # completes to 'jctl pipeline'
 
 ```bash
 jctl pipeline list
-jctl pipeline list --filter "hamc-*"
-jctl pipeline list --folder managed-cloud
+jctl pipeline list --filter "deploy-*"
+jctl pipeline list --folder deploy
 ```
 
 ### Run a Pipeline
 
 ```bash
 # Basic run
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl pipeline run deploy/release-pipeline
 
 # With parameters
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl pipeline run deploy/release-pipeline \
   --param environment_name=dev-test \
   --param region=us-east-1
 
 # Run and wait for completion
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl pipeline run deploy/release-pipeline \
   --param environment_name=dev-test \
   --wait
 ```
@@ -64,26 +64,26 @@ jctl pipeline run managed-cloud/hamc-upgrade-pipeline \
 
 ```bash
 # View latest build logs
-jctl pipeline logs managed-cloud/hamc-upgrade-pipeline
+jctl pipeline logs deploy/release-pipeline
 
 # View specific build
-jctl pipeline logs managed-cloud/hamc-upgrade-pipeline 123
+jctl pipeline logs deploy/release-pipeline 123
 
 # Stream logs in real-time
-jctl pipeline logs managed-cloud/hamc-upgrade-pipeline --follow
+jctl pipeline logs deploy/release-pipeline --follow
 ```
 
 ### Check Pipeline Status
 
 ```bash
 # Detailed pipeline information
-jctl pipeline describe managed-cloud/hamc-upgrade-pipeline 123
+jctl pipeline describe deploy/release-pipeline 123
 ```
 
 ### Cancel a Running Pipeline
 
 ```bash
-jctl pipeline cancel managed-cloud/hamc-upgrade-pipeline 123
+jctl pipeline cancel deploy/release-pipeline 123
 ```
 
 ## Working with Multiple Environments
@@ -129,7 +129,7 @@ jctl --profile prd auth token
 jctl --profile dev pipeline list
 
 # Use staging
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl --profile stg pipeline run deploy/release-pipeline
 
 # Use production (default)
 jctl pipeline list
@@ -145,7 +145,7 @@ alias jprd='jctl --profile prd'
 
 # Then use:
 jdev pipeline list
-jstg pipeline run managed-cloud/hamc-upgrade-pipeline
+jstg pipeline run deploy/release-pipeline
 jprd auth status
 ```
 
@@ -153,25 +153,25 @@ jprd auth status
 
 ```bash
 # 1. List available pipelines
-jctl pipeline list --filter "hamc-*"
+jctl pipeline list --filter "deploy-*"
 
 # 2. Run pipeline in dev
-jctl --profile dev pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile dev pipeline run deploy/release-pipeline \
   --param environment_name=dev-test \
   --wait
 
 # 3. If successful, run in staging
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile stg pipeline run deploy/release-pipeline \
   --param environment_name=stg-test \
   --wait
 
 # 4. If staging passes, run in production
-jctl --profile prd pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile prd pipeline run deploy/release-pipeline \
   --param environment_name=prd-001 \
   --wait
 
 # 5. Monitor logs
-jctl --profile prd pipeline logs managed-cloud/hamc-upgrade-pipeline --follow
+jctl --profile prd pipeline logs deploy/release-pipeline --follow
 ```
 
 ## Checking Status
@@ -269,8 +269,8 @@ source ~/.zshrc
 
 # 5. Start using jctl!
 jdev pipeline list
-jstg pipeline run managed-cloud/hamc-upgrade-pipeline --param env=stg-test --wait
-jprd pipeline list --filter "hamc-*"
+jstg pipeline run deploy/release-pipeline --param env=stg-test --wait
+jprd pipeline list --filter "deploy-*"
 ```
 
 You're all set! 🚀

@@ -123,9 +123,9 @@ defaults:
   cache_ttl: 300
 
 aliases:
-  ne: job trigger hamc-new-environment
-  we: job trigger hamc-wipe-environment
-  drift: job trigger hamc-monitor-drift
+  deploy: job trigger deploy/release-pipeline
+  rollback: job trigger deploy/rollback
+  smoke: job trigger qa/smoke-tests
 ```
 
 ## Using Profiles
@@ -148,10 +148,10 @@ Use the `--profile` flag to specify which profile to use:
 jctl --profile dev pipeline list
 
 # Use staging profile
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl --profile stg pipeline run deploy/release-pipeline
 
 # Use production profile explicitly
-jctl --profile production pipeline logs managed-cloud/hamc-upgrade-pipeline 123
+jctl --profile production pipeline logs deploy/release-pipeline 123
 ```
 
 ### Profile with Any Command
@@ -163,14 +163,14 @@ The `--profile` flag works with all jctl commands:
 jctl --profile dev pipeline list
 
 # Run pipeline in staging
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile stg pipeline run deploy/release-pipeline \
   --param environment_name=staging-test
 
 # Check auth status in production
 jctl --profile production auth status
 
 # Trigger job in dev
-jctl --profile dev job trigger hamc-new-environment \
+jctl --profile dev job trigger deploy-staging \
   --param environment_name=dev-test
 ```
 
@@ -298,7 +298,7 @@ alias jctl-prd='jctl --profile production'
 
 # Usage:
 jctl-dev pipeline list
-jctl-stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl-stg pipeline run deploy/release-pipeline
 jctl-prd auth status
 ```
 
@@ -386,17 +386,17 @@ If authentication fails for a specific profile:
 
 ```bash
 # 1. Test in dev
-jctl --profile dev pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile dev pipeline run deploy/release-pipeline \
   --param environment_name=dev-test \
   --wait
 
 # 2. If successful, test in staging
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile stg pipeline run deploy/release-pipeline \
   --param environment_name=stg-test \
   --wait
 
 # 3. If staging passes, run in production
-jctl --profile production pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile production pipeline run deploy/release-pipeline \
   --param environment_name=prd-001 \
   --wait
 ```
@@ -405,13 +405,13 @@ jctl --profile production pipeline run managed-cloud/hamc-upgrade-pipeline \
 
 ```bash
 # Monitor dev
-jctl --profile dev pipeline logs managed-cloud/hamc-monitor-drift --follow
+jctl --profile dev pipeline logs deploy/monitor-infrastructure --follow
 
 # Monitor staging
-jctl --profile stg pipeline logs managed-cloud/hamc-monitor-drift --follow
+jctl --profile stg pipeline logs deploy/monitor-infrastructure --follow
 
 # Monitor production
-jctl --profile production pipeline logs managed-cloud/hamc-monitor-drift --follow
+jctl --profile production pipeline logs deploy/monitor-infrastructure --follow
 ```
 
 ### Check Status Across All Environments

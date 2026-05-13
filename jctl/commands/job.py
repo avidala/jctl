@@ -35,8 +35,8 @@ def trigger(
     """Trigger a Jenkins job with parameters.
 
     Examples:
-        jctl job trigger managed-cloud/hamc-upgrade-pipeline -p environment=dev -p version=1.2.3
-        jctl job trigger managed-cloud/hamc-upgrade-pipeline --param environment=dev --wait
+        jctl job trigger deploy/release-pipeline -p environment=dev -p version=1.2.3
+        jctl job trigger deploy/release-pipeline --param environment=dev --wait
     """
     params = dict(p.split("=", 1) for p in param) if param else {}
 
@@ -152,8 +152,8 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
     """View or stream job logs.
 
     Examples:
-        jctl job logs managed-cloud/hamc-monitor-drift 123
-        jctl job logs managed-cloud/hamc-monitor-drift --follow
+        jctl job logs deploy/release-pipeline 123
+        jctl job logs deploy/release-pipeline --follow
     """
     # Get authenticated client
     client = get_jenkins_client(ctx)
