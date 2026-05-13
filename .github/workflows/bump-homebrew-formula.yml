@@ -72,7 +72,8 @@ jobs:
         run: |
           python -m venv /tmp/poet-venv
           /tmp/poet-venv/bin/pip install --quiet --upgrade pip
-          /tmp/poet-venv/bin/pip install --quiet homebrew-pypi-poet
+          # setuptools provides `pkg_resources`, which poet imports; py3.12+ doesn't bundle it.
+          /tmp/poet-venv/bin/pip install --quiet setuptools homebrew-pypi-poet
           # install jctl from the GitHub release sdist, NOT PyPI: PyPI's `jctl`
           # is a different package (Jamf tool) and cannot be used here.
           /tmp/poet-venv/bin/pip install --quiet "$SDIST_URL"
