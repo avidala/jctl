@@ -10,42 +10,42 @@ def get_mock_pipelines() -> list[dict[str, Any]]:
 
     return [
         {
-            "name": "hamc-new-environment",
+            "name": "provision-environment",
             "status": "SUCCESS",
             "last_run": (now - timedelta(hours=2)).strftime("%Y-%m-%d %H:%M"),
             "duration": "12m 34s",
             "build_number": 142,
         },
         {
-            "name": "hamc-wipe-environment",
+            "name": "teardown-environment",
             "status": "RUNNING",
             "last_run": now.strftime("%Y-%m-%d %H:%M"),
             "duration": "3m 12s",
             "build_number": 89,
         },
         {
-            "name": "hamc-backup-check",
+            "name": "backup-check",
             "status": "FAILED",
             "last_run": (now - timedelta(hours=5)).strftime("%Y-%m-%d %H:%M"),
             "duration": "45m 23s",
             "build_number": 234,
         },
         {
-            "name": "hamc-monitor-drift",
+            "name": "monitor-infrastructure",
             "status": "SUCCESS",
             "last_run": (now - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M"),
             "duration": "8m 15s",
             "build_number": 156,
         },
         {
-            "name": "hamc-new-aws-account",
+            "name": "deploy-staging",
             "status": "SUCCESS",
             "last_run": (now - timedelta(days=1)).strftime("%Y-%m-%d %H:%M"),
             "duration": "25m 47s",
             "build_number": 78,
         },
         {
-            "name": "hamc-pause-environments",
+            "name": "pause-environments",
             "status": "ABORTED",
             "last_run": (now - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M"),
             "duration": "2m 05s",
@@ -95,7 +95,7 @@ def get_mock_job_info(name: str) -> dict[str, Any]:
     """Get mock job information."""
     return {
         "name": name,
-        "description": f"HAMC pipeline for {name.replace('hamc-', '').replace('-', ' ')}",
+        "description": f"Jenkins pipeline for {name.replace('-', ' ')}",
         "buildable": True,
         "last_build": {
             "number": 142,

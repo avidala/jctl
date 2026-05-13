@@ -1,0 +1,61 @@
+name: smoke-install
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to smoke-test (e.g. v0.1.1)'
+        required: true
+        type: string
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for release asset
+        env:
+          URL: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/jctl-${{ steps.ver.outputs.version }}.tar.gz
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sfL -o /dev/null "$URL"; then
+              echo "Asset available: $URL"
+              exit 0
+            fi
+            echo "Attempt $i: asset not yet available, sleeping 10s..."
+            sleep 10
+          done
+          echo "Asset never became available: $URL" >&2
+          exit 1
+
+      - name: Install via pipx from release tarball
+        run: |
+          python -m pip install --upgrade pip pipx
+          python -m pipx ensurepath
+          python -m pipx install "https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/jctl-${{ steps.ver.outputs.version }}.tar.gz"
+
+      - name: Verify the installed CLI runs
+        run: |
+          jctl --version
+          jctl --help

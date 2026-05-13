@@ -14,7 +14,7 @@ def validate_job_name(name: str) -> bool:
         True if valid
     """
     # Jenkins job names can contain alphanumeric, dash, underscore, and forward slash (for folders)
-    # Examples: "my-job", "folder/my-job", "managed-cloud/hamc-upgrade-pipeline"
+    # Examples: "my-job", "folder/my-job", "deploy/release-pipeline"
     pattern = r"^[a-zA-Z0-9_/-]+$"
     return bool(re.match(pattern, name))
 

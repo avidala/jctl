@@ -217,10 +217,10 @@ jctl config set profiles.prod.jenkins.urls '["https://jenkins1", "https://jenkin
 **2. Watch Mode**
 ```bash
 # Continuously watch pipeline status
-jctl pipeline watch hamc-upgrade-pipeline
+jctl pipeline watch deploy/release-pipeline
 
 # Watch multiple pipelines
-jctl pipeline watch --all --filter "hamc-*"
+jctl pipeline watch --all --filter "deploy-*"
 ```
 **Effort**: 6-8 hours
 
@@ -230,7 +230,7 @@ jctl pipeline watch --all --filter "hamc-*"
 jctl job trigger-batch jobs.yaml
 
 # Cancel multiple pipelines
-jctl pipeline cancel-batch --filter "hamc-*" --status running
+jctl pipeline cancel-batch --filter "deploy-*" --status running
 ```
 **Effort**: 10-12 hours
 
@@ -247,7 +247,7 @@ jctl pipeline list --output-file pipelines.json
 **5. Pipeline Comparison**
 ```bash
 # Compare two pipeline runs
-jctl pipeline diff hamc-upgrade 123 124
+jctl pipeline diff deploy-staging 123 124
 
 # Show what changed between runs
 jctl pipeline compare --builds 123,124,125
@@ -257,8 +257,9 @@ jctl pipeline compare --builds 123,124,125
 ### Package Distribution
 
 **PyPI Package**:
-- Publish to PyPI
-- Enable `pip install jctl`
+- Publish to PyPI under a name that does not collide with the existing
+  `jctl` package (a Jamf Pro CRUD tool from another author). Likely
+  candidates: `avidala-jctl` or `jenkins-jctl`.
 - Automated releases via GitHub Actions
 - **Effort**: 4-6 hours
 

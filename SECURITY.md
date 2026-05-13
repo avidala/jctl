@@ -51,10 +51,12 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
-Instead, please report security issues to:
-- **Email**: avnervidal27@gmail.com
-- **Slack**: avnervidal27@gmail.com () - DM a team member
-- **Subject Line**: "SECURITY: [Brief Description]"
+Instead, please report security issues using one of the channels below:
+
+- **Preferred:** open a private [GitHub Security Advisory](https://github.com/avidala/jctl/security/advisories/new) on this repository. GitHub will route it directly to the maintainers and keep the report private until disclosure is coordinated.
+- **Backup:** email `avnervidal27@gmail.com` with the subject line `"SECURITY: [brief description]"`.
+
+Please do **not** open a public GitHub issue and do **not** post details in public chat channels.
 
 ### What to Include
 

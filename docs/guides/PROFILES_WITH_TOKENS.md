@@ -57,7 +57,7 @@ jctl --profile prd auth token
 jctl --profile dev pipeline list
 
 # Use staging environment
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl --profile stg pipeline run deploy/release-pipeline
 
 # Use production environment (default)
 jctl pipeline list
@@ -127,9 +127,9 @@ defaults:
   cache_ttl: 300
 
 aliases:
-  ne: job trigger hamc-new-environment
-  we: job trigger hamc-wipe-environment
-  drift: job trigger hamc-monitor-drift
+  ne: job trigger deploy-staging
+  we: job trigger teardown-environment
+  drift: job trigger monitor-infrastructure
 ```
 
 **Note:** The Okta config shows `not-configured` which indicates API token authentication is used.
@@ -176,17 +176,17 @@ For each Jenkins environment:
 
 ```bash
 # 1. Test in dev
-jctl --profile dev pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile dev pipeline run deploy/release-pipeline \
   --param environment_name=dev-test \
   --wait
 
 # 2. If successful, promote to staging
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile stg pipeline run deploy/release-pipeline \
   --param environment_name=stg-test \
   --wait
 
 # 3. If staging passes, deploy to production
-jctl --profile prd pipeline run managed-cloud/hamc-upgrade-pipeline \
+jctl --profile prd pipeline run deploy/release-pipeline \
   --param environment_name=prd-001 \
   --wait
 ```
@@ -195,13 +195,13 @@ jctl --profile prd pipeline run managed-cloud/hamc-upgrade-pipeline \
 
 ```bash
 # Monitor dev pipeline
-jctl --profile dev pipeline logs managed-cloud/hamc-upgrade-pipeline --follow
+jctl --profile dev pipeline logs deploy/release-pipeline --follow
 
 # Check staging status
-jctl --profile stg pipeline describe managed-cloud/hamc-upgrade-pipeline 123
+jctl --profile stg pipeline describe deploy/release-pipeline 123
 
 # List production pipelines
-jctl --profile prd pipeline list --filter "hamc-*"
+jctl --profile prd pipeline list --filter "deploy-*"
 ```
 
 ### Manage Credentials
@@ -236,7 +236,7 @@ alias jprd-list='jctl --profile prd pipeline list'
 Usage:
 ```bash
 jctl-dev pipeline list
-jctl-stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl-stg pipeline run deploy/release-pipeline
 jctl-prd auth status
 ```
 

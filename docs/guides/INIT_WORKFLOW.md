@@ -123,9 +123,9 @@ defaults:
   cache_ttl: 300
 
 aliases:
-  ne: job trigger hamc-new-environment
-  we: job trigger hamc-wipe-environment
-  drift: job trigger hamc-monitor-drift
+  ne: job trigger deploy-staging
+  we: job trigger teardown-environment
+  drift: job trigger monitor-infrastructure
 ```
 
 ### Okta OAuth Profile
@@ -171,7 +171,7 @@ jctl auth token
 
 # Then use jctl
 jctl pipeline list
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl pipeline run deploy/release-pipeline
 ```
 
 ### Okta OAuth Authentication
@@ -185,7 +185,7 @@ jctl auth login
 
 # Then use jctl
 jctl pipeline list
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl pipeline run deploy/release-pipeline
 ```
 
 ## Reinitializing
@@ -279,7 +279,7 @@ jctl --profile prd auth token
 
 # 4. Use them!
 jctl --profile dev pipeline list
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl --profile stg pipeline run deploy/release-pipeline
 jctl pipeline list  # Uses prd (default)
 ```
 

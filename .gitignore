@@ -68,3 +68,6 @@ config.local.yaml
 *.pem
 credentials.json
 tokens.json
+
+# Claude Code worktrees (local-only isolated branches)
+.claude/worktrees/

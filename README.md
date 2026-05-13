@@ -1,18 +1,12 @@
 <div align="center">
 
-<!-- Organization Banner -->
-<img src="assets/org-banner.svg" alt="AVIDALA DevOps Tools" width="100%"/>
-
-<br/>
-<br/>
-
 <!-- Project Logo -->
 <img src="assets/logo.svg" alt="jctl logo" width="500"/>
 
 # jctl - Jenkins Control CLI
 
-[![Tests](https://github.com/avidala/jctl/workflows/Tests/badge.svg?branch=develop)](https://github.com/avidala/jctl/actions/workflows/test.yml)
-[![Lint](https://github.com/avidala/jctl/workflows/Lint/badge.svg?branch=develop)](https://github.com/avidala/jctl/actions/workflows/lint.yml)
+[![Tests](https://github.com/avidala/jctl/workflows/Tests/badge.svg?branch=main)](https://github.com/avidala/jctl/actions/workflows/test.yml)
+[![Lint](https://github.com/avidala/jctl/workflows/Lint/badge.svg?branch=main)](https://github.com/avidala/jctl/actions/workflows/lint.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -28,7 +22,7 @@
 - 🚀 **Pipeline Management** - List, run, describe, cancel pipelines with real-time monitoring
 - 📊 **Real-time Monitoring** - Stream logs and track job status
 - 🎨 **Beautiful Output** - Rich terminal UI with tables and colors
-- 🔧 **DevOps Optimized** - Built for HAMC pipeline workflows
+- 🔧 **DevOps Optimized** - Built for everyday platform engineering pipelines
 - 🔒 **Secure Token Storage** - OS-native keychain integration
 - ⌨️ **Shell Completion** - Tab completion for commands, subcommands, and options
 - 🎯 **Multiple Profiles** - Manage dev, staging, and production environments separately
@@ -37,8 +31,32 @@
 
 ### Installation
 
+#### Option 1: Homebrew (macOS/Linux - Recommended)
+
 ```bash
-cd cli/jenkins
+# Tap the repository and install
+brew install avidala/jctl/jctl
+
+# Verify installation
+jctl --version
+```
+
+#### Option 2: pipx (All platforms)
+
+```bash
+# install the latest tagged release in an isolated env
+pipx install "git+https://github.com/avidala/jctl.git@v0.1.0"
+```
+
+> **Note:** the name `jctl` on PyPI belongs to an unrelated Jamf project,
+> so this tool is **not** distributed via `pip install jctl`. Install via
+> Homebrew (above), `pipx` from this git URL, or from source.
+
+#### Option 3: From source
+
+```bash
+git clone https://github.com/avidala/jctl.git
+cd jctl
 pip install -e ".[dev]"
 ```
 
@@ -107,19 +125,19 @@ You're all set! Try: jctl pipeline list
 
 ```bash
 # Trigger a Jenkins job
-jctl job trigger hamc-new-environment \
-  --param environment_name=staging-test \
-  --param aws_account_id=123456789012 \
+jctl job trigger deploy-staging \
+  --param environment=staging \
+  --param branch=main \
   --wait
 
-# List pipelines
-jctl pipeline list --filter "hamc-*"
+# List pipelines matching a pattern
+jctl pipeline list --filter "deploy-*"
 
-# Stream logs
-jctl job logs hamc-new-environment-142 --follow
+# Stream logs for a specific build
+jctl job logs deploy-staging-142 --follow
 
-# Cancel running pipeline
-jctl pipeline cancel hamc-new-environment 142
+# Cancel a running build
+jctl pipeline cancel deploy-staging 142
 ```
 
 ### Working with Multiple Environments
@@ -137,7 +155,7 @@ jctl --profile stg auth token
 
 # Use specific profile with --profile flag
 jctl --profile dev pipeline list
-jctl --profile stg pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl --profile stg pipeline run release/deploy-staging
 jctl --profile production auth status
 ```
 
@@ -333,24 +351,23 @@ cli/jenkins/
 
 ```bash
 # Provision new environment
-jctl pipeline run hamc-new-environment \
+jctl pipeline run provision-environment \
   --param environment_name=staging-001 \
-  --param aws_account_id=123456789012 \
   --param region=us-east-1 \
   --wait --notify
 
-# Monitor drift
-jctl job trigger hamc-monitor-drift --wait
+# Run a periodic monitoring job
+jctl job trigger monitor-infrastructure --wait
 
 # Emergency pipeline cancellation
-jctl pipeline cancel hamc-wipe-environment 89 \
+jctl pipeline cancel teardown-environment 89 \
   --reason "Wrong account selected"
 
 # View pipeline execution details
-jctl pipeline describe hamc-new-environment 142
+jctl pipeline describe provision-environment 142
 
 # Stream pipeline logs in real-time
-jctl pipeline logs hamc-new-environment 142 --follow
+jctl pipeline logs provision-environment 142 --follow
 ```
 
 ### Integration with Scripts
@@ -360,9 +377,8 @@ jctl pipeline logs hamc-new-environment 142 --follow
 # Automated environment provisioning
 
 # Trigger job and wait for completion
-jctl job trigger hamc-new-environment \
+jctl job trigger provision-environment \
   --param environment_name=staging \
-  --param aws_account_id=123456789012 \
   --wait
 
 if [ $? -eq 0 ]; then
@@ -370,7 +386,7 @@ if [ $? -eq 0 ]; then
 else
   echo "✗ Environment provisioning failed"
   # View the logs to troubleshoot
-  jctl job logs hamc-new-environment
+  jctl job logs provision-environment
   exit 1
 fi
 ```

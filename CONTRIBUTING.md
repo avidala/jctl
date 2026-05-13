@@ -138,22 +138,25 @@ Enhancement suggestions should include:
 #### Step 1: Create a Branch
 
 ```bash
-# Ensure you're on the latest develop branch
-git checkout develop
-git pull origin develop
+# Ensure you're on the latest main
+git checkout main
+git pull origin main
 
 # Create a feature branch
-git checkout -b feature/your-feature-name
+git checkout -b feat/your-feature-name
 # or
 git checkout -b fix/bug-description
 ```
 
-**Branch naming conventions:**
-- `feature/` - New features
+**Branch naming conventions** (mirror the [Conventional Commits](https://www.conventionalcommits.org/) types release-please uses):
+- `feat/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation updates
 - `refactor/` - Code refactoring
 - `test/` - Test additions or fixes
+- `chore/` - Tooling, config, internal changes
+
+**PR titles must be conventional** (`feat: …`, `fix: …`, `chore: …`, etc.) — release-please reads them to compute the next version. The `lint-pr-title` check enforces this on every PR.
 
 #### Step 2: Make Your Changes
 
@@ -455,11 +458,11 @@ Brief description of changes
 
 ### Review Process
 
-1. **Automated Checks**: CI/CD runs tests, linting, security scans
+1. **Automated Checks**: CI/CD runs tests, linting, security scans, CodeQL, and conventional-commit title validation
 2. **Code Review**: At least one maintainer reviews the PR
 3. **Feedback**: Address review comments
 4. **Approval**: PR approved by maintainer
-5. **Merge**: Maintainer merges to develop branch
+5. **Merge**: Maintainer squash-merges to `main`. release-please then opens (or updates) a Release PR that, when merged, tags + publishes the release
 
 ### Review Criteria
 
@@ -505,7 +508,7 @@ We follow [Semantic Versioning](https://semver.org/):
 - Check existing documentation
 - Search closed issues for similar problems
 - Email: avnervidal27@gmail.com
-- Mention `@managed-cloud` team for urgent issues
+- Mention `@maintainers` team for urgent issues
 
 ## Recognition
 
