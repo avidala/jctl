@@ -117,7 +117,11 @@ jobs:
           git checkout -b "$BRANCH"
           git add Formula/jctl.rb
           git commit -m "chore: bump jctl to ${{ steps.version.outputs.tag }}"
-          git push --force-with-lease origin "$BRANCH"
+          # plain --force, not --force-with-lease: actions/checkout only fetches the
+          # default branch, so we have no remote-tracking ref for an existing
+          # `bump/vX.Y.Z` from a prior run, and --force-with-lease rejects with
+          # "stale info". this branch is bot-managed end-to-end, safe to overwrite.
+          git push --force origin "$BRANCH"
 
           if gh pr view "$BRANCH" --repo avidala/homebrew-jctl >/dev/null 2>&1; then
             echo "PR already exists for $BRANCH; updated branch."
