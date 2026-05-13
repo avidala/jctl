@@ -25,9 +25,7 @@ def pipeline() -> None:
 
 @pipeline.command()
 @click.option("--filter", "-f", help="Filter pipelines by pattern")
-@click.option(
-    "--folder", help="Filter by folder (e.g., 'deploy' or 'deploy/staging')"
-)
+@click.option("--folder", help="Filter by folder (e.g., 'deploy' or 'deploy/staging')")
 @click.option("--status", type=click.Choice(["SUCCESS", "FAILED", "RUNNING", "ABORTED"]))
 @click.option("--limit", "-n", type=int, default=50, help="Number of pipelines to show")
 @click.pass_context
