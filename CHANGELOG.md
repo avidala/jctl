@@ -13,12 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Homebrew tap at `avidala/homebrew-jctl` — install via `brew install avidala/jctl/jctl`.
-- GitHub Actions workflow that auto-bumps the formula in the tap on every published (non-prerelease) jctl release.
+### Docs
 
-### Changed
-- Homebrew formula now pins `python@3.13`, declares `libyaml` and `rust` build deps, includes the previously missing `python-jenkins` and `python-dotenv` resources, and adds Linux-only `jeepney`/`secretstorage` keyring backends.
+- Fix install instructions: `pip install jctl` was pointing users at an unrelated Jamf Pro CRUD package owned by another author on PyPI. README now recommends Homebrew or `pipx install` from the git tag, and `ROADMAP.md` flags that a future PyPI release must use a non-colliding name (e.g. `avidala-jctl`).
+
+### Tooling
+
+- Pin lint tool versions in CI (`black==24.10.0`, `ruff==0.9.2`, `bandit==1.9.1`) to match `.pre-commit-config.yaml` so upstream releases cannot break the build.
+- Drop deprecated `safety check` from the Lint workflow (the legacy command was retired upstream).
+- Gitignore `.claude/worktrees/` so local Claude Code worktrees do not leak into commits.
 
 ## [0.1.0-beta.1] - 2025-01-20
 

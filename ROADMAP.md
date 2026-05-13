@@ -257,8 +257,9 @@ jctl pipeline compare --builds 123,124,125
 ### Package Distribution
 
 **PyPI Package**:
-- Publish to PyPI
-- Enable `pip install jctl`
+- Publish to PyPI under a name that does not collide with the existing
+  `jctl` package (a Jamf Pro CRUD tool from another author). Likely
+  candidates: `avidala-jctl` or `jenkins-jctl`.
 - Automated releases via GitHub Actions
 - **Effort**: 4-6 hours
 
