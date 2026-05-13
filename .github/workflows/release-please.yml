@@ -12,8 +12,15 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # if `RELEASE_PLEASE_TOKEN` (a PAT with contents:write + pull-requests:write) is set as a repo secret,
+      # release-please uses it so the tag/release events it emits CAN trigger downstream workflows
+      # (release.yml, smoke-install.yml, bump-homebrew-formula.yml). With the default GITHUB_TOKEN,
+      # those events do NOT propagate (GitHub policy, prevents recursion). Without a PAT, you must
+      # manually `workflow_dispatch` release.yml / smoke-install.yml / bump-homebrew-formula.yml
+      # after each Release PR merge.
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
