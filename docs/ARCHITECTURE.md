@@ -15,12 +15,12 @@ This document describes the architecture, design decisions, and technical implem
 
 ## Overview
 
-jctl is a command-line interface tool designed for managing Jenkins pipelines with Okta SSO authentication, specifically optimized for Jenkins DevOps DevOps workflows.
+jctl is a command-line interface tool for managing Jenkins pipelines using Jenkins API token authentication, optimized for DevOps workflows.
 
 ### Key Design Goals
 
 1. **User-Friendly**: Simple, intuitive CLI with excellent UX
-2. **Secure**: Multiple authentication methods with secure credential storage
+2. **Secure**: Credentials stored in the OS keystore, HTTPS-only API calls
 3. **Reliable**: Retry logic, proper error handling, and robust API integration
 4. **Fast**: Caching, async operations, and optimized performance
 5. **Extensible**: Modular design allowing easy feature additions
@@ -58,13 +58,9 @@ jctl is a command-line interface tool designed for managing Jenkins pipelines wi
 │  ┌──────────────────┬─────────────────────────────────┐ │
 │  │  Authentication  │     Jenkins Integration         │ │
 │  │  ┌────────────┐  │  ┌──────────┬────────────────┐  │ │
-│  │  │   Okta     │  │  │  Client  │   Operations   │  │ │
-│  │  │ OAuth 2.0  │  │  │          │   (Jobs/Pipes) │  │ │
-│  │  └────────────┘  │  └──────────┴────────────────┘  │ │
-│  │  ┌────────────┐  │                                  │ │
-│  │  │ API Token  │  │                                  │ │
-│  │  └────────────┘  │                                  │ │
-│  └──────────────────┴─────────────────────────────────┘ │
+│  │  │ API Token  │  │  │  Client  │   Operations   │  │ │
+│  │  └────────────┘  │  │          │   (Jobs/Pipes) │  │ │
+│  └──────────────────┴──┴──────────┴────────────────┘─┘ │
 └────────────────────┬────────────────────────────────────┘
                      │
                      ▼
@@ -79,10 +75,9 @@ jctl is a command-line interface tool designed for managing Jenkins pipelines wi
                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │              External Services                           │
-│  ┌──────────────┬──────────────────────────────────────┐│
-│  │ Jenkins API  │          Okta OAuth                   ││
-│  │ (REST/JSON)  │     (Authorization Server)            ││
-│  └──────────────┴──────────────────────────────────────┘│
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ Jenkins API (REST/JSON)                              ││
+│  └──────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -127,10 +122,9 @@ jctl is a command-line interface tool designed for managing Jenkins pipelines wi
 - **Purpose**: Integration with external APIs
 - **Components**:
   - Jenkins REST API
-  - Okta OAuth 2.0 API
 - **Responsibilities**:
   - HTTP communication
-  - API authentication
+  - API authentication (HTTP Basic auth with API token)
   - Response parsing
   - Error handling
 
@@ -141,52 +135,23 @@ jctl is a command-line interface tool designed for managing Jenkins pipelines wi
 ```
 auth/
 ├── __init__.py
-├── okta.py              # Okta OAuth 2.0 implementation
 ├── api_token.py         # Jenkins API token auth
-├── token_manager.py     # OAuth token lifecycle
 └── keystore.py          # Secure credential storage
-```
-
-#### Okta OAuth Authenticator (`okta.py`)
-
-**Purpose**: Implement OAuth 2.0 with PKCE flow for Okta SSO
-
-**Key Features**:
-- PKCE (Proof Key for Code Exchange) for security
-- Local HTTP server for OAuth callback
-- Automatic browser opening
-- Token refresh mechanism
-
-**Flow**:
-```
-1. Generate PKCE challenge (code_verifier, code_challenge)
-2. Build authorization URL
-3. Open browser → User authenticates with Okta
-4. Receive callback with authorization code
-5. Exchange code for tokens (access_token, refresh_token)
-6. Store tokens securely
-7. Use access_token for Jenkins API calls
-8. Refresh when expired
 ```
 
 #### API Token Authenticator (`api_token.py`)
 
-**Purpose**: Simple username/token authentication for automation
+**Purpose**: Username + Jenkins API token authentication
 
 **Features**:
-- Straightforward credential storage
+- Stores username and API token via `SecureKeystore`
 - No browser interaction required
-- Ideal for CI/CD pipelines
+- Works equally well for interactive use and CI/CD
 
-#### Token Manager (`token_manager.py`)
-
-**Purpose**: Manage OAuth token lifecycle
-
-**Responsibilities**:
-- Store access and refresh tokens
-- Check token expiration
-- Trigger token refresh
-- Clear tokens on logout
+**Flow**:
+1. User runs `jctl auth token` (or supplies values via flags)
+2. Credentials are written to the OS keystore (`jenkins_username`, `jenkins_token`)
+3. `JenkinsClient` uses them as HTTP Basic auth on every request
 
 #### Secure Keystore (`keystore.py`)
 
@@ -200,7 +165,6 @@ auth/
 2. **Encrypted Fallback** (When keystore unavailable)
    - Fernet symmetric encryption
    - Machine-derived encryption key (PBKDF2)
-   - Stored in `~/.jctl/keystore.enc`
 
 **Key Derivation**:
 ```python
@@ -284,14 +248,6 @@ profiles:
     jenkins:
       url: https://jenkins.example.com
       verify_ssl: true
-    okta:
-      domain: company.okta.com
-      client_id: jenkins-cli
-      redirect_uri: http://localhost:8989/callback
-      scopes:
-        - openid
-        - profile
-        - email
 
 defaults:
   timeout: 30
@@ -307,7 +263,6 @@ defaults:
 - `Config`: Root configuration model
 - `ProfileConfig`: Individual profile configuration
 - `JenkinsConfig`: Jenkins-specific settings
-- `OktaConfig`: Okta OAuth settings
 
 ### Utilities Module (`jctl/utils/`)
 
@@ -330,38 +285,20 @@ utils/
 - Async job fetching
 - Silent failure (doesn't break completion)
 
-**Cache Strategy**:
-```python
-_job_cache = {
-    "jobs": [],
-    "timestamp": 0,
-    "ttl": 300  # 5 minutes
-}
-```
-
 #### Jenkins Client Factory (`jenkins_client_factory.py`)
 
 **Purpose**: Centralized client creation logic
 
 **Features**:
-- Tries API token auth first
-- Falls back to OAuth tokens
-- Handles configuration errors gracefully
-- Returns authenticated client
+- Reads username and API token from the keystore via `APITokenAuthenticator`
+- Returns an authenticated `JenkinsClient` ready for use
+- Exits with a clear error message when no credentials are stored
 
 #### Logging (`logging.py`)
 
 **Purpose**: Structured logging with Rich output
 
-**Features**:
-- Rich terminal formatting
-- Debug mode with tracebacks
-- File logging (optional)
-- Third-party logger suppression
-
 #### Output Formatting (`output.py`)
-
-**Purpose**: Format output for different modes
 
 **Formats**:
 - **Table**: Rich tables with colors
@@ -371,56 +308,36 @@ _job_cache = {
 
 ## Data Flow
 
-### Authentication Flow (OAuth)
+### Authentication Flow
 
 ```
-┌──────┐                 ┌──────┐                ┌──────┐              ┌─────────┐
-│ User │                 │ jctl │                │ Okta │              │ Jenkins │
-└───┬──┘                 └──┬───┘                └──┬───┘              └────┬────┘
-    │                       │                       │                       │
-    │ jctl auth login       │                       │                       │
-    ├──────────────────────>│                       │                       │
-    │                       │                       │                       │
-    │                       │ Generate PKCE         │                       │
-    │                       │ code_verifier         │                       │
-    │                       │ code_challenge        │                       │
-    │                       │                       │                       │
-    │                       │ Open browser          │                       │
-    │<──────────────────────┤ with auth URL         │                       │
-    │                       │                       │                       │
-    │ (Browser opens)       │                       │                       │
-    │ Login with Okta       │                       │                       │
-    ├───────────────────────┼──────────────────────>│                       │
-    │                       │                       │                       │
-    │                       │         OAuth callback│                       │
-    │                       │<──────────────────────┤                       │
-    │                       │ with auth code        │                       │
-    │                       │                       │                       │
-    │                       │ Exchange code         │                       │
-    │                       │ for tokens            │                       │
-    │                       ├──────────────────────>│                       │
-    │                       │                       │                       │
-    │                       │ Return tokens         │                       │
-    │                       │<──────────────────────┤                       │
-    │                       │ (access, refresh)     │                       │
-    │                       │                       │                       │
-    │                       │ Store tokens in       │                       │
-    │                       │ OS keystore           │                       │
-    │                       │                       │                       │
-    │ Login successful      │                       │                       │
-    │<──────────────────────┤                       │                       │
-    │                       │                       │                       │
-    │ jctl pipeline list    │                       │                       │
-    ├──────────────────────>│                       │                       │
-    │                       │                       │  API call with token  │
-    │                       │                       │  Authorization: Bearer│
-    │                       ├───────────────────────┼──────────────────────>│
-    │                       │                       │                       │
-    │                       │                       │   Pipeline list       │
-    │                       │<───────────────────────┼───────────────────────┤
-    │                       │                       │                       │
-    │ Display pipelines     │                       │                       │
-    │<──────────────────────┤                       │                       │
+┌──────┐                 ┌──────┐                ┌─────────┐
+│ User │                 │ jctl │                │ Jenkins │
+└───┬──┘                 └──┬───┘                └────┬────┘
+    │                       │                         │
+    │ jctl auth token       │                         │
+    ├──────────────────────>│                         │
+    │ <username> <token>    │                         │
+    │                       │                         │
+    │                       │ Store in OS keystore    │
+    │                       │ (jenkins_username,      │
+    │                       │  jenkins_token)         │
+    │                       │                         │
+    │ ✓ Configured          │                         │
+    │<──────────────────────┤                         │
+    │                       │                         │
+    │ jctl pipeline list    │                         │
+    ├──────────────────────>│                         │
+    │                       │                         │
+    │                       │ GET /api/json           │
+    │                       │ Authorization: Basic …  │
+    │                       ├────────────────────────>│
+    │                       │                         │
+    │                       │ 200 + pipelines         │
+    │                       │<────────────────────────┤
+    │                       │                         │
+    │ Display pipelines     │                         │
+    │<──────────────────────┤                         │
 ```
 
 ### Job Trigger Flow
@@ -436,7 +353,7 @@ _job_cache = {
     ├──────────────────────>│                         │
     │                       │                         │
     │                       │ Get Jenkins client      │
-    │                       │ (with auth)             │
+    │                       │ (with API token auth)   │
     │                       │                         │
     │                       │ POST /job/trigger       │
     │                       │ with parameters         │
@@ -448,27 +365,12 @@ _job_cache = {
     │ Job triggered         │                         │
     │<──────────────────────┤                         │
     │                       │                         │
-    │                       │ Poll queue              │
-    │                       │ GET /queue/item/{id}    │
-    │                       ├────────────────────────>│
-    │                       │                         │
-    │                       │ Return queue status     │
-    │                       │<────────────────────────┤
-    │                       │                         │
-    │ Job started #142      │                         │
-    │<──────────────────────┤                         │
-    │                       │                         │
     │                       │ Poll build status       │
     │                       │ GET /job/build/{num}    │
     │                       ├────────────────────────>│
     │                       │                         │
     │                       │ Return build info       │
     │                       │<────────────────────────┤
-    │                       │                         │
-    │ Build running...      │                         │
-    │<──────────────────────┤                         │
-    │                       │                         │
-    │                       │ (repeat polling)        │
     │                       │                         │
     │ Build succeeded       │                         │
     │<──────────────────────┤                         │
@@ -481,9 +383,8 @@ _job_cache = {
 jctl implements multiple security layers:
 
 #### Layer 1: Authentication
-- **OAuth 2.0 with PKCE**: Industry standard, secure
-- **API Tokens**: Scoped permissions
-- **No Password Storage**: Never store user passwords
+- **Jenkins API Tokens**: Scoped permissions on the Jenkins side
+- **No Password Storage**: Never store user passwords; only the API token
 
 #### Layer 2: Credential Storage
 - **OS-Native Keystore**: Leverages system security
@@ -519,7 +420,6 @@ jctl implements multiple security layers:
 **Threats NOT Mitigated** (user responsibility):
 - ❌ Compromised user machine
 - ❌ Malicious Jenkins server
-- ❌ Okta account compromise
 - ❌ Network-level attacks (use VPN)
 
 ## Technology Stack
@@ -530,7 +430,6 @@ jctl implements multiple security layers:
 |-----------|-----------|---------|---------|
 | CLI Framework | Click | 8.1.7+ | Command-line interface |
 | HTTP Client | httpx | 0.25.2+ | Async HTTP requests |
-| Auth Library | Authlib | 1.3.0+ | OAuth 2.0 implementation |
 | Credential Storage | keyring | 24.3.0+ | OS keystore integration |
 | Encryption | cryptography | 41.0.7+ | Fernet encryption |
 | Config Validation | Pydantic | 2.5.0+ | Type-safe config |
@@ -546,7 +445,6 @@ jctl implements multiple security layers:
 | ruff | Linting |
 | mypy | Type checking |
 | bandit | Security scanning |
-| safety | Dependency checking |
 | pre-commit | Git hooks |
 
 ## Design Decisions
@@ -573,15 +471,15 @@ jctl implements multiple security layers:
 - Modern, actively maintained
 - Compatible with requests API
 
-### Why Dual Authentication?
+### Why API Tokens Only?
 
-**Decision**: Support both OAuth and API tokens
+**Decision**: API token authentication is the only supported method
 
 **Rationale**:
-- OAuth for interactive use (SSO, better UX)
-- API tokens for automation (CI/CD, scripts)
-- Flexibility for different use cases
-- Lower barrier to entry (API tokens simpler)
+- Works for both interactive use and automation (CI/CD)
+- No external identity provider dependency
+- Simple to rotate (generate a new token in Jenkins, run `jctl auth token` again)
+- A prior OAuth/SSO implementation was removed in favor of this single, simpler path
 
 ### Why OS Keystore with Encrypted Fallback?
 
@@ -623,14 +521,6 @@ jctl implements multiple security layers:
 4. Register in `jctl/cli.py`
 5. Add tests in `tests/unit/`
 
-### Adding New Authentication Methods
-
-1. Create authenticator in `jctl/auth/`
-2. Implement authentication interface
-3. Update `jenkins_client_factory.py`
-4. Add credential storage logic
-5. Add auth command in `commands/auth.py`
-
 ### Adding New Output Formats
 
 1. Add format to `utils/output.py`
@@ -645,39 +535,8 @@ jctl implements multiple security layers:
 3. Add fallback logic
 4. Test on target platform
 
-## Future Architecture Considerations
-
-### Plugin System
-
-Potential plugin architecture for extensions:
-- Custom commands
-- Custom output formatters
-- Custom authentication methods
-
-### Configuration Management Service
-
-Centralized config management:
-- Sync configs across machines
-- Team-wide profiles
-- Version control for configs
-
-### Caching Layer
-
-More sophisticated caching:
-- Redis/memcached for distributed caching
-- Configurable TTL per resource type
-- Cache invalidation strategies
-
-### Telemetry
-
-Optional usage analytics:
-- Command usage statistics
-- Error reporting
-- Performance metrics
-- Opt-in only, privacy-focused
-
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-01-20
-**Status**: Current for v0.1.0-beta.1
+**Document Version**: 2.0
+**Last Updated**: 2026-05-13
+**Status**: Current — Okta/OAuth removed

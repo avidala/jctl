@@ -38,12 +38,10 @@ def init(ctx: click.Context, force: bool) -> None:
             sys.exit(0)
 
     try:
-        # If config exists and not forcing, add a profile instead
         if manager.exists() and not force:
             console.print("[cyan]Adding new profile to existing configuration...[/cyan]\n")
             manager.init_interactive_add_profile()
         else:
-            # Fresh init or force overwrite
             manager.init_interactive()
 
         console.print()
@@ -113,7 +111,6 @@ def list(ctx: click.Context) -> None:  # noqa: A001
         config = manager.get()
         formatter = OutputFormatter(console)
 
-        # Convert config to dict for display
         config_dict = config.model_dump(mode="json", exclude_none=True)
 
         formatter.format(config_dict, output_format)
@@ -142,7 +139,6 @@ def show(ctx: click.Context) -> None:
         console.print(f"[cyan]Configuration file:[/cyan] {manager.config_file}")
         console.print()
 
-        # Read and display the YAML file
         with open(manager.config_file) as f:
             content = f.read()
             console.print(content)
@@ -155,10 +151,6 @@ def show(ctx: click.Context) -> None:
 @config.command("add-profile")
 @click.argument("profile_name")
 @click.option("--jenkins-url", required=True, help="Jenkins server URL")
-@click.option(
-    "--okta-domain", help="Okta domain (e.g., company.okta.com) - optional for API token auth"
-)
-@click.option("--okta-client-id", help="Okta OAuth client ID - optional for API token auth")
 @click.option("--verify-ssl/--no-verify-ssl", default=True, help="Verify SSL certificates")
 @click.option("--set-default", is_flag=True, help="Set as default profile")
 @click.pass_context
@@ -166,40 +158,26 @@ def add_profile(
     ctx: click.Context,
     profile_name: str,
     jenkins_url: str,
-    okta_domain: str | None,
-    okta_client_id: str | None,
     verify_ssl: bool,
     set_default: bool,
 ) -> None:
     """Add a new configuration profile.
 
-    You can create profiles with or without Okta OAuth configuration.
-    If you only use API tokens, you can omit --okta-domain and --okta-client-id.
-
     Examples:
-        # Profile with Okta OAuth
-        jctl config add-profile dev \\
-          --jenkins-url https://jenkins-dev.example.com \\
-          --okta-domain company-dev.okta.com \\
-          --okta-client-id jenkins-cli-dev
-
-        # Profile with only API token auth (no Okta)
         jctl config add-profile dev \\
           --jenkins-url https://jenkins-dev.example.com
 
-        # Set as default profile
         jctl config add-profile stg \\
           --jenkins-url https://jenkins-stg.example.com \\
           --set-default
     """
-    from jctl.config.schemas import JenkinsConfig, OktaConfig, ProfileConfig
+    from jctl.config.schemas import JenkinsConfig, ProfileConfig
 
     manager = ConfigManager()
 
     try:
         config = manager.get()
 
-        # Check if profile already exists
         if profile_name in config.profiles:
             console.print(f"[yellow]Warning:[/yellow] Profile '{profile_name}' already exists")
             from rich.prompt import Confirm
@@ -208,27 +186,15 @@ def add_profile(
                 console.print("Aborted")
                 sys.exit(0)
 
-        # Create Okta config if domain and client_id provided
-        if okta_domain and okta_client_id:
-            okta_config = OktaConfig(domain=okta_domain, client_id=okta_client_id)
-        else:
-            # Use default/placeholder Okta config for API token auth
-            okta_config = OktaConfig(domain="not-configured.okta.com", client_id="not-configured")
-
-        # Create new profile
         new_profile = ProfileConfig(
             jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=verify_ssl),
-            okta=okta_config,
         )
 
-        # Add profile to config
         config.profiles[profile_name] = new_profile
 
-        # Set as default if requested
         if set_default:
             config.default_profile = profile_name
 
-        # Save config
         manager.save(config)
 
         console.print(f"[green]✓[/green] Profile '{profile_name}' added successfully")
@@ -239,13 +205,7 @@ def add_profile(
         console.print(f"  jctl --profile {profile_name} <command>")
 
         console.print("\n[dim]To authenticate:[/dim]")
-        if okta_domain and okta_client_id:
-            console.print(f"  jctl --profile {profile_name} auth token  # API token")
-            console.print(f"  jctl --profile {profile_name} auth login  # Okta OAuth")
-        else:
-            console.print(f"  jctl --profile {profile_name} auth token  # API token only")
-            console.print("\n[yellow]Note:[/yellow] Okta OAuth not configured for this profile.")
-            console.print("       Use API token authentication or add Okta settings later.")
+        console.print(f"  jctl --profile {profile_name} auth token")
 
     except FileNotFoundError:
         console.print("[red]Error:[/red] Configuration not found")

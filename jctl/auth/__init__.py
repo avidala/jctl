@@ -1,1 +1,1 @@
-"""Authentication module for Okta SSO integration."""
+"""Authentication module for Jenkins API token credentials."""

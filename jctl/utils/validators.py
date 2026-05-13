@@ -71,19 +71,6 @@ def validate_url(url: str) -> bool:
     return bool(re.match(pattern, url))
 
 
-def validate_okta_domain(domain: str) -> bool:
-    """Validate Okta domain format.
-
-    Args:
-        domain: Okta domain to validate (e.g., company.okta.com)
-
-    Returns:
-        True if valid
-    """
-    pattern = r"^[a-zA-Z0-9.-]+\.okta(preview)?\.com$"
-    return bool(re.match(pattern, domain))
-
-
 def validate_aws_account_id(account_id: str) -> bool:
     """Validate AWS account ID format.
 

@@ -9,11 +9,7 @@ import pytest
 
 @pytest.fixture
 def temp_config_dir() -> Generator[Path, None, None]:
-    """Create a temporary config directory for tests.
-
-    Yields:
-        Path to temporary config directory
-    """
+    """Create a temporary config directory for tests."""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_dir = Path(tmpdir)
         yield config_dir
@@ -21,51 +17,13 @@ def temp_config_dir() -> Generator[Path, None, None]:
 
 @pytest.fixture
 def mock_jenkins_url() -> str:
-    """Mock Jenkins server URL.
-
-    Returns:
-        Mock Jenkins URL
-    """
+    """Mock Jenkins server URL."""
     return "https://jenkins.example.com"
 
 
 @pytest.fixture
-def mock_okta_config() -> dict[str, str]:
-    """Mock Okta configuration.
-
-    Returns:
-        Mock Okta config dictionary
-    """
-    return {
-        "domain": "example.okta.com",
-        "client_id": "test-client-id",
-        "redirect_uri": "http://localhost:8989/callback",
-    }
-
-
-@pytest.fixture
-def sample_tokens() -> dict[str, str]:
-    """Sample authentication tokens for testing.
-
-    Returns:
-        Sample token dictionary
-    """
-    return {
-        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.test_access_token",
-        "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.test_refresh_token",
-        "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.test_id_token",
-        "expires_at": 1234567890,
-        "token_type": "Bearer",
-    }
-
-
-@pytest.fixture
 def sample_jenkins_job_info() -> dict:
-    """Sample Jenkins job info for testing.
-
-    Returns:
-        Sample job info dictionary
-    """
+    """Sample Jenkins job info for testing."""
     return {
         "name": "test-job",
         "url": "https://jenkins.example.com/job/test-job/",
@@ -97,11 +55,7 @@ def sample_jenkins_job_info() -> dict:
 
 @pytest.fixture
 def sample_build_info() -> dict:
-    """Sample Jenkins build info for testing.
-
-    Returns:
-        Sample build info dictionary
-    """
+    """Sample Jenkins build info for testing."""
     return {
         "number": 42,
         "building": False,

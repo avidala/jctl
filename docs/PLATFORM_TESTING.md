@@ -12,7 +12,6 @@ Use this checklist when testing jctl on each platform:
 - [x] All dependencies install correctly
 - [x] Keystore (Keychain) integration works
 - [x] Authentication (API token) works
-- [x] Authentication (OAuth) works
 - [x] All commands execute successfully
 - [x] Tab completion works
 - [x] Tests pass
@@ -190,7 +189,7 @@ pip install -e ".[dev]"
 **macOS (Keychain)**:
 - Location: macOS Keychain (`Keychain Access.app`)
 - Service: `jctl`
-- Items stored: `jenkins_oauth_access_token`, `jenkins_oauth_refresh_token`, `jenkins_api_token`, `jenkins_username`
+- Items stored: `jenkins_username`, `jenkins_token`, `encryption_key`
 
 **Linux (SecretService)**:
 - Location: GNOME Keyring / KDE Wallet

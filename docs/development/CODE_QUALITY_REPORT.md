@@ -1,5 +1,11 @@
 # Code Quality & Security Report
 
+> **Note (2026-05-13):** This report is a historical snapshot. References to
+> `jctl/auth/okta.py`, `tests/unit/test_auth_okta.py`, and the `authlib`
+> dependency no longer apply — Okta/OAuth support was removed and `authlib`
+> was dropped from `pyproject.toml`. Re-run `bandit`, `ruff`, and `pytest`
+> for the current state of the codebase.
+
 **Report Date**: 2025-01-20
 **Status**: ✅ PASS - Ready for production
 **Overall Score**: 94/100

@@ -1,6 +1,5 @@
 """Tests for secure keystore."""
 
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -142,56 +141,6 @@ class TestSecureKeystore:
         assert mock_keyring.delete_password.call_count == 2  # Regular and encrypted versions
 
     @patch("jctl.auth.keystore.keyring")
-    def test_store_tokens(self, mock_keyring, sample_tokens):
-        """Test storing authentication tokens."""
-        mock_keyring.set_password = MagicMock()
-
-        keystore = SecureKeystore()
-        keystore.store_tokens(sample_tokens)
-
-        mock_keyring.set_password.assert_called_once()
-        call_args = mock_keyring.set_password.call_args
-        assert call_args[0][1] == "tokens"
-
-        # Verify tokens were serialized to JSON
-        stored_json = call_args[0][2]
-        stored_tokens = json.loads(stored_json)
-        assert stored_tokens["access_token"] == sample_tokens["access_token"]
-
-    @patch("jctl.auth.keystore.keyring")
-    def test_retrieve_tokens(self, mock_keyring, sample_tokens):
-        """Test retrieving authentication tokens."""
-        tokens_json = json.dumps(sample_tokens)
-        mock_keyring.get_password.return_value = tokens_json
-
-        keystore = SecureKeystore()
-        tokens = keystore.retrieve_tokens()
-
-        assert tokens == sample_tokens
-        mock_keyring.get_password.assert_called_once_with("jctl", "tokens")
-
-    @patch("jctl.auth.keystore.keyring")
-    def test_retrieve_tokens_not_found(self, mock_keyring):
-        """Test retrieving tokens when none exist."""
-        mock_keyring.get_password.return_value = None
-
-        keystore = SecureKeystore()
-        tokens = keystore.retrieve_tokens()
-
-        assert tokens is None
-
-    @patch("jctl.auth.keystore.keyring")
-    def test_delete_tokens(self, mock_keyring):
-        """Test deleting authentication tokens."""
-        mock_keyring.delete_password = MagicMock()
-
-        keystore = SecureKeystore()
-        keystore.delete_tokens()
-
-        # Should delete both regular and encrypted versions
-        assert mock_keyring.delete_password.call_count == 2
-
-    @patch("jctl.auth.keystore.keyring")
     def test_clear_all(self, mock_keyring):
         """Test clearing all credentials."""
         mock_keyring.delete_password = MagicMock()
@@ -199,5 +148,5 @@ class TestSecureKeystore:
         keystore = SecureKeystore()
         keystore.clear_all()
 
-        # Should delete tokens and encryption key
-        assert mock_keyring.delete_password.call_count >= 2
+        # username + token + encryption_key, each tries plain + _encrypted = 6 calls
+        assert mock_keyring.delete_password.call_count >= 3
