@@ -92,8 +92,12 @@ def replace_block(formula_text: str, new_body: str) -> str:
     `new_body` ends with `\n` and `\s*END_MARKER` greedily captured the prior
     gap — brew style `Layout/EmptyLines` then trips on the second run.
     """
+    # group(2) ends with `\n` (the line break before the END marker's line);
+    # group(3) is the END marker line's own indent + literal. `\s*` between
+    # them is wrong — it greedily eats the END marker's indent, leaving the
+    # marker at column 0.
     pattern = re.compile(
-        rf"({re.escape(BEGIN_MARKER)}[^\n]*\n)(.*?)\s*([ \t]*{re.escape(END_MARKER)})",
+        rf"({re.escape(BEGIN_MARKER)}[^\n]*\n)(.*?\n)([ \t]*{re.escape(END_MARKER)})",
         re.DOTALL,
     )
     if not pattern.search(formula_text):
