@@ -1,11 +1,5 @@
 <div align="center">
 
-<!-- Organization Banner -->
-<img src="assets/org-banner.svg" alt="AVIDALA DevOps Tools" width="100%"/>
-
-<br/>
-<br/>
-
 <!-- Project Logo -->
 <img src="assets/logo.svg" alt="jctl logo" width="500"/>
 
