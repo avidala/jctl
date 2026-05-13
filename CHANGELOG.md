@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Part of the AVIDALA DevOps Tools suite*
 
+## [0.2.0](https://github.com/avidala/jctl/compare/v0.1.0...v0.2.0) (2026-05-13)
+
+
+### Features
+
+* add comprehensive GitHub repository configuration ([7f264d5](https://github.com/avidala/jctl/commit/7f264d590de4183a303d3a2add60c08ca6c1df94))
+
+
+### Bug Fixes
+
+* handle no-change case in production release workflow ([b0afdcb](https://github.com/avidala/jctl/commit/b0afdcbb7d931d2b180b85194baf395bde839d57))
+
+
+### Documentation
+
+* add branch protection and repository setup guides ([538e229](https://github.com/avidala/jctl/commit/538e229c9a799bd6b5f9794e7812bf71db34ee84))
+
+
+### Code Refactoring
+
+* reorganize documentation for better clarity ([dadeba2](https://github.com/avidala/jctl/commit/dadeba28a246d02bbfb278c9f602207b92f68449))
+
 ## [Unreleased]
 
 ### Added
