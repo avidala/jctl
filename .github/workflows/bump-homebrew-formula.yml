@@ -1,0 +1,85 @@
+name: Bump Homebrew Formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version to bump (e.g. 0.1.1)'
+        required: true
+        type: string
+
+jobs:
+  bump-formula:
+    runs-on: ubuntu-latest
+    # skip pre-releases on the auto trigger; allow manual dispatch always
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    steps:
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for release asset to be available
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/jctl-${{ steps.version.outputs.version }}.tar.gz"
+          for i in $(seq 1 30); do
+            if curl -sfL -o /dev/null "$URL"; then
+              echo "Asset is available: $URL"
+              exit 0
+            fi
+            echo "Attempt $i: asset not yet available, sleeping 10s..."
+            sleep 10
+          done
+          echo "Asset never became available: $URL" >&2
+          exit 1
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/jctl-${{ steps.version.outputs.version }}.tar.gz"
+          SHA=$(curl -sfL "$URL" | shasum -a 256 | awk '{print $1}')
+          if [ -z "$SHA" ]; then
+            echo "Failed to compute SHA256" >&2
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap repo
+        uses: actions/checkout@v5
+        with:
+          repository: avidala/homebrew-jctl
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Update formula
+        working-directory: tap
+        run: |
+          FORMULA="Formula/jctl.rb"
+          sed -i -E 's|^(  url ").*"|\1${{ steps.sha.outputs.url }}"|' "$FORMULA"
+          sed -i -E 's|^(  sha256 ").*"|\1${{ steps.sha.outputs.sha }}"|' "$FORMULA"
+          echo "--- Updated header ---"
+          head -10 "$FORMULA"
+
+      - name: Commit and push
+        working-directory: tap
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/jctl.rb
+          git commit -m "chore: bump jctl to ${{ steps.version.outputs.tag }}"
+          git push origin HEAD:main

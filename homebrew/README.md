@@ -1,163 +1,65 @@
-# Homebrew Formula for jctl
+# Homebrew distribution
 
-This directory contains the Homebrew formula for installing jctl.
+jctl is distributed via the [`avidala/homebrew-jctl`](https://github.com/avidala/homebrew-jctl) tap.
 
-## For Users: Installing jctl via Homebrew
-
-Once the tap is published, users can install jctl with:
-
-```bash
-# Tap the repository
-brew tap avidala/jctl
-
-# Install jctl
-brew install jctl
-
-# Verify installation
-jctl --version
-```
-
-Or install in one command:
+## For users
 
 ```bash
 brew install avidala/jctl/jctl
 ```
 
-## For Maintainers: Publishing the Tap
-
-### Step 1: Create the Tap Repository
-
-Create a new GitHub repository named `homebrew-jctl`:
+Or tap first, then install:
 
 ```bash
-# Using GitHub CLI
-gh repo create avidala/homebrew-jctl --public --description "Homebrew tap for jctl"
-
-# Clone it
-git clone https://github.com/avidala/homebrew-jctl.git
-cd homebrew-jctl
-```
-
-### Step 2: Add the Formula
-
-Copy the formula to the tap repository:
-
-```bash
-# Create Formula directory
-mkdir -p Formula
-
-# Copy the formula
-cp /path/to/jctl/homebrew/jctl.rb Formula/jctl.rb
-
-# Create README
-cat > README.md << 'EOF'
-# Homebrew Tap for jctl
-
-Official Homebrew tap for [jctl](https://github.com/avidala/jctl) - Jenkins Control CLI with Okta SSO.
-
-## Installation
-
-```bash
-brew install avidala/jctl/jctl
-```
-
-## Usage
-
-After installation, run:
-
-```bash
-jctl --help
-```
-
-For more information, visit the [main repository](https://github.com/avidala/jctl).
-EOF
-
-# Commit and push
-git add .
-git commit -m "feat: add jctl formula v0.1.0"
-git push origin main
-```
-
-### Step 3: Test the Installation
-
-```bash
-# Tap your repository
 brew tap avidala/jctl
-
-# Install jctl
 brew install jctl
-
-# Test it
-jctl --version
 ```
 
-### Step 4: Updating the Formula for New Releases
+Updating:
 
-When you release a new version:
-
-1. Download the new release tarball
-2. Calculate the new SHA256:
-   ```bash
-   curl -sL https://github.com/avidala/jctl/releases/download/vX.X.X/jctl-X.X.X.tar.gz | shasum -a 256
-   ```
-3. Update `Formula/jctl.rb`:
-   - Change the `url` line to point to the new version
-   - Update the `sha256` with the new hash
-4. Commit and push:
-   ```bash
-   git add Formula/jctl.rb
-   git commit -m "chore: update jctl to vX.X.X"
-   git push origin main
-   ```
-
-Users will get the update with:
 ```bash
 brew update
 brew upgrade jctl
 ```
 
-## Formula Details
+## For maintainers
 
-The formula:
-- Uses Python 3.10+
-- Creates a virtualenv
-- Installs all dependencies automatically
-- Provides the `jctl` command
+The formula source of truth lives in the tap repo at `Formula/jctl.rb`. Do not hand-edit a copy in this repo — there is no duplicate to drift.
 
-## Testing the Formula Locally
+### Automatic bumps on release
 
-Before publishing, test the formula:
+The workflow at `.github/workflows/bump-homebrew-formula.yml` runs on every published (non-prerelease) GitHub release and:
+
+1. Waits for the `jctl-<version>.tar.gz` release asset to be available.
+2. Computes its SHA256.
+3. Checks out `avidala/homebrew-jctl`, rewrites `url` and `sha256` in `Formula/jctl.rb`, and pushes to `main`.
+
+It can also be triggered manually via `workflow_dispatch` with a `version` input — useful for backfilling or recovery.
+
+### Required secret
+
+The workflow needs a repository secret named `HOMEBREW_TAP_TOKEN`: a fine-grained PAT (or classic PAT with `repo` scope) with write access to `avidala/homebrew-jctl`. Add it under **Settings → Secrets and variables → Actions**.
+
+### When a dependency changes (manual update)
+
+The auto-bump only refreshes `url` and `sha256`. If you change Python dependencies in `pyproject.toml`, regenerate the resource blocks in the tap:
 
 ```bash
-# Audit the formula
-brew audit --strict --online Formula/jctl.rb
-
-# Install from local formula
-brew install --build-from-source Formula/jctl.rb
-
-# Test it
-jctl --version
+brew tap avidala/jctl
+brew update-python-resources avidala/jctl/jctl --install-dependencies --print-only
 ```
 
-## Troubleshooting
+Paste the output over the existing `resource` blocks, then audit:
 
-**Problem**: Formula fails to install
-
-**Solution**: Check:
-1. The release URL is accessible
-2. The SHA256 matches the tarball
-3. All dependencies are available
-4. Python version compatibility
-
-**Problem**: Command not found after install
-
-**Solution**:
 ```bash
-brew link jctl
+brew audit --strict --online avidala/jctl/jctl
 ```
 
-## Resources
+### Local formula testing
 
-- [Homebrew Formula Cookbook](https://docs.brew.sh/Formula-Cookbook)
-- [Python Formula Guide](https://docs.brew.sh/Python-for-Formula-Authors)
-- [Homebrew Tap Documentation](https://docs.brew.sh/How-to-Create-and-Maintain-a-Tap)
+```bash
+brew untap avidala/jctl 2>/dev/null
+brew tap avidala/jctl /path/to/your/homebrew-jctl/checkout
+brew install --build-from-source avidala/jctl/jctl
+brew test avidala/jctl/jctl
+```
