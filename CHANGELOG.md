@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Part of the AVIDALA DevOps Tools suite*
 
+## [0.2.2](https://github.com/avidala/jctl/compare/v0.2.1...v0.2.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* **ci:** keep END marker's indent when splicing resources block ([#31](https://github.com/avidala/jctl/issues/31)) ([f5ca7e6](https://github.com/avidala/jctl/commit/f5ca7e6a9ba721119e2e494f387e1229a4e2e72a))
+* **ci:** make resources block replacement idempotent ([#29](https://github.com/avidala/jctl/issues/29)) ([7bef420](https://github.com/avidala/jctl/commit/7bef42064321e34faee869b78d0481873ef981f8))
+
 ## [0.2.1](https://github.com/avidala/jctl/compare/v0.2.0...v0.2.1) (2026-05-13)
 
 
