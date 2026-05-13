@@ -505,7 +505,7 @@ We follow [Semantic Versioning](https://semver.org/):
 - Check existing documentation
 - Search closed issues for similar problems
 - Email: avnervidal27@gmail.com
-- Mention `@managed-cloud` team for urgent issues
+- Mention `@maintainers` team for urgent issues
 
 ## Recognition
 

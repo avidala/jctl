@@ -56,7 +56,7 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Checkout tap repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: avidala/homebrew-jctl
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}

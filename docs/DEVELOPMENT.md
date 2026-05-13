@@ -554,18 +554,15 @@ touch tests/unit/test_my_command.py
 # 1. Add to pyproject.toml
 # Under [project] dependencies
 
-# 2. Add version constraint
+# 2. Add a version constraint
 # Example: "new-package>=1.0.0,<2.0"
 
-# 3. Also add to requirements.txt
-echo "new-package>=1.0.0,<2.0" >> requirements.txt
-
-# 4. Install
-pip install new-package
-
-# 5. Update lock file (if using)
-pip freeze > requirements-lock.txt
+# 3. Re-install the project so the new dep is picked up
+pip install -e ".[dev]"
 ```
+
+`pyproject.toml` is the single source of truth — there are no standalone
+`requirements.txt` / `requirements-dev.txt` files.
 
 ### Running Local Changes
 

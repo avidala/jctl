@@ -92,22 +92,22 @@ jctl pipeline r<Tab> # Completes to: jctl pipeline run
 ```bash
 jctl pipeline run managed-<Tab>
 # Shows:
-#   managed-cloud/hamc-upgrade-pipeline
-#   managed-cloud/hamc-monitor-drift
-#   managed-cloud/check-run-pre-commit
+#   deploy/release-pipeline
+#   deploy/monitor-infrastructure
+#   qa/run-pre-commit
 #   ...
 
-jctl pipeline run managed-cloud/hamc-<Tab>
+jctl pipeline run deploy/release-<Tab>
 # Shows:
-#   managed-cloud/hamc-upgrade-pipeline
-#   managed-cloud/hamc-monitor-drift
-#   managed-cloud/hamc-new-environment
+#   deploy/release-pipeline
+#   deploy/monitor-infrastructure
+#   deploy/provision-environment
 #   ...
 ```
 
 ### 3. Options and Flags
 ```bash
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline --<Tab>
+jctl pipeline run deploy/release-pipeline --<Tab>
 # Shows:
 #   --param
 #   --wait
@@ -123,22 +123,22 @@ jctl pipeline run managed-cloud/hamc-upgrade-pipeline --<Tab>
 jctl pipeline run man<Tab>
 
 # Get this:
-jctl pipeline run managed-cloud/
+jctl pipeline run deploy/
 
 # Continue typing:
-jctl pipeline run managed-cloud/hamc-u<Tab>
+jctl pipeline run deploy/release-u<Tab>
 
 # Get this:
-jctl pipeline run managed-cloud/hamc-upgrade-pipeline
+jctl pipeline run deploy/release-pipeline
 ```
 
 ### Job Completion
 ```bash
 # Type this:
-jctl job logs managed-cloud/ch<Tab>
+jctl job logs deploy/ch<Tab>
 
 # Get this:
-jctl job logs managed-cloud/check-run-pre-commit
+jctl job logs qa/run-pre-commit
 ```
 
 ### Logs Completion
@@ -147,17 +147,17 @@ jctl job logs managed-cloud/check-run-pre-commit
 jctl pipeline logs man<Tab>
 
 # Get this:
-jctl pipeline logs managed-cloud/
+jctl pipeline logs deploy/
 
 # Then add build number:
-jctl pipeline logs managed-cloud/hamc-upgrade-pipeline 123
+jctl pipeline logs deploy/release-pipeline 123
 ```
 
 ## How It Works
 
 1. **Dynamic Completion**: When you press Tab, jctl queries your Jenkins instance in real-time
 2. **Authentication Required**: You must be authenticated (`jctl auth token` or `jctl auth login`) for completion to work
-3. **Folder Structure**: Completion respects Jenkins folder structure (e.g., `managed-cloud/hamc-*`)
+3. **Folder Structure**: Completion respects Jenkins folder structure (e.g., `deploy/release-*`)
 4. **Fast Caching**: Results are fetched quickly using the Jenkins API
 
 ## Troubleshooting

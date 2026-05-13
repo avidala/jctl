@@ -132,16 +132,16 @@ Once configured, all Jenkins commands will automatically use your API token:
 jctl pipeline list
 
 # Get pipeline details
-jctl pipeline describe hamc-new-environment 142
+jctl pipeline describe deploy-staging 142
 
 # Trigger a job
-jctl job trigger hamc-new-environment
+jctl job trigger deploy-staging
 
 # Cancel a running build
-jctl pipeline cancel hamc-drift-monitor 55
+jctl pipeline cancel monitor-infrastructure 55
 
 # View job logs
-jctl job logs hamc-backup-check 10
+jctl job logs backup-check 10
 ```
 
 The API token is automatically included in requests to Jenkins.
@@ -316,7 +316,7 @@ Now that you have API token authentication configured:
 1. **Test basic commands**:
    ```bash
    jctl pipeline list
-   jctl pipeline describe hamc-new-environment 142
+   jctl pipeline describe deploy-staging 142
    ```
 
 2. **Explore available commands**:
@@ -333,7 +333,7 @@ Now that you have API token authentication configured:
 
 4. **Set up aliases** (optional):
    ```bash
-   jctl config set aliases.newenv "job trigger hamc-new-environment"
+   jctl config set aliases.newenv "job trigger deploy-staging"
    jctl newenv  # Now triggers the job!
    ```
 
@@ -350,7 +350,7 @@ If you encounter issues:
 2. Enable debug mode: `jctl --debug auth token`
 3. Review logs: `~/.jctl/logs/jctl.log`
 4. Check Slack: `avnervidal27@gmail.com` channel
-5. Contact: Cloud Engineering team (@managed-cloud)
+5. Contact: Cloud Engineering team (@maintainers)
 
 ## Quick Reference
 
