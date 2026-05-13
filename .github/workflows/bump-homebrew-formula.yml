@@ -10,12 +10,18 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   bump-formula:
     runs-on: ubuntu-latest
     # skip pre-releases on the auto trigger; allow manual dispatch always
     if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
     steps:
+      - name: Checkout jctl
+        uses: actions/checkout@v6
+
       - name: Resolve version
         id: version
         run: |
@@ -55,6 +61,20 @@ jobs:
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Generate resources via homebrew-pypi-poet
+        run: |
+          python -m venv /tmp/poet-venv
+          /tmp/poet-venv/bin/pip install --quiet --upgrade pip
+          /tmp/poet-venv/bin/pip install --quiet homebrew-pypi-poet "jctl==${{ steps.version.outputs.version }}"
+          /tmp/poet-venv/bin/poet jctl > /tmp/resources.rb
+          echo "--- poet output (head) ---"
+          head -20 /tmp/resources.rb
+
       - name: Checkout tap repo
         uses: actions/checkout@v6
         with:
@@ -65,21 +85,39 @@ jobs:
       - name: Update formula
         working-directory: tap
         run: |
-          FORMULA="Formula/jctl.rb"
-          sed -i -E 's|^(  url ").*"|\1${{ steps.sha.outputs.url }}"|' "$FORMULA"
-          sed -i -E 's|^(  sha256 ").*"|\1${{ steps.sha.outputs.sha }}"|' "$FORMULA"
-          echo "--- Updated header ---"
-          head -10 "$FORMULA"
+          python "$GITHUB_WORKSPACE/.github/scripts/update_formula.py" \
+            --formula Formula/jctl.rb \
+            --url "${{ steps.sha.outputs.url }}" \
+            --sha256 "${{ steps.sha.outputs.sha }}" \
+            --resources /tmp/resources.rb
+          echo "--- Formula header ---"
+          head -20 Formula/jctl.rb
 
-      - name: Commit and push
+      - name: Open pull request on tap
         working-directory: tap
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           if git diff --quiet; then
             echo "No changes to commit"
             exit 0
           fi
+
+          BRANCH="bump/v${{ steps.version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add Formula/jctl.rb
           git commit -m "chore: bump jctl to ${{ steps.version.outputs.tag }}"
-          git push origin HEAD:main
+          git push --force-with-lease origin "$BRANCH"
+
+          if gh pr view "$BRANCH" --repo avidala/homebrew-jctl >/dev/null 2>&1; then
+            echo "PR already exists for $BRANCH; updated branch."
+          else
+            gh pr create \
+              --repo avidala/homebrew-jctl \
+              --base main \
+              --head "$BRANCH" \
+              --title "chore: bump jctl to ${{ steps.version.outputs.tag }}" \
+              --body "Automated bump from [jctl ${{ steps.version.outputs.tag }}](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}). CI must pass before merge."
+          fi
