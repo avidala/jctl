@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Homebrew tap at `avidala/homebrew-jctl` — install via `brew install avidala/jctl/jctl`.
+- GitHub Actions workflow that auto-bumps the formula in the tap on every published (non-prerelease) jctl release.
+
+### Changed
+- Homebrew formula now pins `python@3.13`, declares `libyaml` and `rust` build deps, includes the previously missing `python-jenkins` and `python-dotenv` resources, and adds Linux-only `jeepney`/`secretstorage` keyring backends.
+
 ## [0.1.0-beta.1] - 2025-01-20
 
 ### 🎉 Initial Beta Release
