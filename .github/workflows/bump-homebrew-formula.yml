@@ -67,10 +67,15 @@ jobs:
           python-version: '3.13'
 
       - name: Generate resources via homebrew-pypi-poet
+        env:
+          SDIST_URL: ${{ steps.sha.outputs.url }}
         run: |
           python -m venv /tmp/poet-venv
           /tmp/poet-venv/bin/pip install --quiet --upgrade pip
-          /tmp/poet-venv/bin/pip install --quiet homebrew-pypi-poet "jctl==${{ steps.version.outputs.version }}"
+          /tmp/poet-venv/bin/pip install --quiet homebrew-pypi-poet
+          # install jctl from the GitHub release sdist, NOT PyPI: PyPI's `jctl`
+          # is a different package (Jamf tool) and cannot be used here.
+          /tmp/poet-venv/bin/pip install --quiet "$SDIST_URL"
           /tmp/poet-venv/bin/poet jctl > /tmp/resources.rb
           echo "--- poet output (head) ---"
           head -20 /tmp/resources.rb
