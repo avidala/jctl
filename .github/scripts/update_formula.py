@@ -84,13 +84,26 @@ def normalize_indent(text: str) -> str:
 
 
 def replace_block(formula_text: str, new_body: str) -> str:
+    """Splice `new_body` between BEGIN/END markers, idempotently.
+
+    The substitution always emits exactly one blank line between the body and
+    the END marker line, regardless of how many blank lines (if any) the prior
+    state had. Without this, each rerun accumulates an extra blank line because
+    `new_body` ends with `\n` and `\s*END_MARKER` greedily captured the prior
+    gap — brew style `Layout/EmptyLines` then trips on the second run.
+    """
     pattern = re.compile(
-        rf"({re.escape(BEGIN_MARKER)}[^\n]*\n)(.*?)(\s*{re.escape(END_MARKER)})",
+        rf"({re.escape(BEGIN_MARKER)}[^\n]*\n)(.*?)\s*([ \t]*{re.escape(END_MARKER)})",
         re.DOTALL,
     )
     if not pattern.search(formula_text):
         sys.exit(f"error: markers not found in formula ({BEGIN_MARKER!r}/{END_MARKER!r})")
-    return pattern.sub(lambda m: f"{m.group(1)}{new_body}{m.group(3)}", formula_text)
+    # new_body ends with a single \n; we add one more \n to produce exactly one
+    # blank line between the last `end` and the END marker.
+    return pattern.sub(
+        lambda m: f"{m.group(1)}{new_body.rstrip()}\n\n{m.group(3)}",
+        formula_text,
+    )
 
 
 def update_url_sha(formula_text: str, url: str, sha256: str) -> str:
