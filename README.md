@@ -47,11 +47,16 @@ brew install avidala/jctl/jctl
 jctl --version
 ```
 
-#### Option 2: pip (All platforms)
+#### Option 2: pipx (All platforms)
 
 ```bash
-pip install jctl
+# install the latest tagged release in an isolated env
+pipx install "git+https://github.com/avidala/jctl.git@v0.1.0"
 ```
+
+> **Note:** the name `jctl` on PyPI belongs to an unrelated Jamf project,
+> so this tool is **not** distributed via `pip install jctl`. Install via
+> Homebrew (above), `pipx` from this git URL, or from source.
 
 #### Option 3: From source
 
