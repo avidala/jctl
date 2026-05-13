@@ -1,5 +1,11 @@
 # mypy Type Checking Report
 
+> **Note (2026-05-13):** This report is a historical snapshot from the
+> v0.1.0-beta.1 release and references `jctl/auth/okta.py` and
+> `jctl/auth/token_manager.py`, which have since been removed when Okta/OAuth
+> support was dropped. Re-run `mypy jctl/` for the current state of the
+> codebase.
+
 **Date**: 2025-01-20
 **Version**: v0.1.0-beta.1
 **mypy Version**: 1.18.2

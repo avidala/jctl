@@ -10,7 +10,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**A flexible command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.**
+**A flexible command-line interface tool for managing Jenkins pipelines using Jenkins API tokens.**
 
 *Part of the AVIDALA DevOps Tools suite*
 
@@ -18,7 +18,7 @@
 
 ## Features
 
-- 🔐 **Dual Authentication** - Choose API tokens (simple) or OAuth 2.0 (advanced)
+- 🔐 **API Token Authentication** - Username + Jenkins API token, stored in your OS keychain
 - 🚀 **Pipeline Management** - List, run, describe, cancel pipelines with real-time monitoring
 - 📊 **Real-time Monitoring** - Stream logs and track job status
 - 🎨 **Beautiful Output** - Rich terminal UI with tables and colors
@@ -90,10 +90,8 @@ jctl config init
 
 # You'll be prompted for:
 #   1. Profile name (e.g., 'dev', 'stg', 'production')
-#   2. Authentication method (API Token or Okta OAuth)
-#   3. Jenkins URL
-#   4. For API Token: Username and token (entered immediately)
-#   5. For Okta: Domain and client ID
+#   2. Jenkins URL
+#   3. Jenkins username and API token (entered immediately)
 
 # That's it! You're authenticated and ready to use jctl
 jctl pipeline list
@@ -104,7 +102,6 @@ jctl pipeline run <pipeline-name>
 ```
 $ jctl config init
 Profile name (production): dev
-Authentication method [1/2/token/okta] (1): 1
 Jenkins URL: https://jenkins-dev.example.com
 Jenkins username: avidal
 Jenkins API token: ●●●●●●●●
@@ -119,7 +116,6 @@ You're all set! Try: jctl pipeline list
 **Guides:**
 - [docs/guides/INIT_WORKFLOW.md](docs/guides/INIT_WORKFLOW.md) - Detailed init workflow
 - [docs/guides/API_TOKEN_GUIDE.md](docs/guides/API_TOKEN_GUIDE.md) - How to get Jenkins API tokens
-- [docs/guides/OKTA_AUTH_GUIDE.md](docs/guides/OKTA_AUTH_GUIDE.md) - How to set up Okta OAuth
 
 ### Basic Usage
 
@@ -160,7 +156,6 @@ jctl --profile production auth status
 ```
 
 **Guides:**
-- [docs/guides/PROFILES_WITH_TOKENS.md](docs/guides/PROFILES_WITH_TOKENS.md) - Using profiles with API tokens (simple)
 - [docs/guides/PROFILES_GUIDE.md](docs/guides/PROFILES_GUIDE.md) - Complete profile configuration guide
 
 ## Command Reference
@@ -168,20 +163,13 @@ jctl --profile production auth status
 ### Authentication Commands
 
 ```bash
-# API Token Authentication (Quick Setup)
 jctl auth token          # Configure Jenkins API token
 jctl auth status         # Show authentication status
-jctl auth logout         # Clear stored credentials
-
-# OAuth SSO Authentication (Production)
-jctl auth login          # Login with Okta SSO
-jctl auth refresh        # Force token refresh
 jctl auth logout         # Clear stored credentials
 ```
 
 **Documentation:**
 - [API Token Guide](docs/guides/API_TOKEN_GUIDE.md) - Quick setup with Jenkins API tokens
-- [OAuth Guide](docs/guides/OKTA_AUTH_GUIDE.md) - Okta SSO authentication setup
 
 ### Job Commands
 
@@ -256,10 +244,6 @@ profiles:
   production:
     jenkins:
       url: https://jenkins.example.com
-    okta:
-      domain: company.okta.com
-      client_id: jenkins-cli
-      redirect_uri: http://localhost:8989/callback
     output:
       format: table
       color: auto
@@ -275,7 +259,6 @@ defaults:
 ```bash
 JCTL_PROFILE=production           # Active profile
 JCTL_JENKINS_URL=https://...      # Jenkins URL
-JCTL_OKTA_DOMAIN=company.okta.com   # Okta domain
 JCTL_OUTPUT_FORMAT=json           # Output format
 JCTL_LOG_LEVEL=DEBUG              # Log level
 JCTL_NO_COLOR=1                   # Disable colors
@@ -317,8 +300,7 @@ cli/jenkins/
 │   ├── __main__.py           # CLI entry point
 │   ├── cli.py                # Click command groups
 │   ├── auth/                 # Authentication module
-│   │   ├── okta.py          # Okta SSO implementation
-│   │   ├── token_manager.py # Token lifecycle
+│   │   ├── api_token.py     # Jenkins API token auth
 │   │   └── keystore.py      # Secure credential storage
 │   ├── jenkins/              # Jenkins integration
 │   │   ├── client.py        # API client
@@ -394,8 +376,7 @@ fi
 ## Security
 
 - Tokens stored in OS-native keychains (macOS Keychain, Linux Secret Service, Windows Credential Manager)
-- OAuth 2.0 with PKCE for secure authentication
-- HTTPS only for Jenkins API communication
+- Jenkins API token sent over HTTP Basic auth on HTTPS only
 - SSL certificate validation by default
 - Audit logging for all job triggers
 - Config files set with 0600 permissions
@@ -410,7 +391,7 @@ jctl auth status
 
 # Re-authenticate
 jctl auth logout
-jctl auth login
+jctl auth token
 ```
 
 ### Connection Issues
@@ -423,11 +404,12 @@ jctl --debug pipeline list
 jctl config get jenkins.url
 ```
 
-### Token Expired
+### Token Rotation
 
 ```bash
-# Force token refresh
-jctl auth refresh
+# Generate a new API token in Jenkins, then:
+jctl auth logout
+jctl auth token
 ```
 
 ## Contributing
@@ -447,12 +429,10 @@ See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contributio
 - [Installation & Setup](docs/guides/INIT_WORKFLOW.md) - Detailed setup instructions
 
 ### Authentication
-- [API Token Guide](docs/guides/API_TOKEN_GUIDE.md) - Simple authentication with Jenkins API tokens
-- [Okta OAuth Guide](docs/guides/OKTA_AUTH_GUIDE.md) - Advanced SSO authentication
+- [API Token Guide](docs/guides/API_TOKEN_GUIDE.md) - Authentication with Jenkins API tokens
 
 ### Configuration
 - [Multiple Profiles](docs/guides/PROFILES_GUIDE.md) - Manage dev, staging, and production
-- [Profiles with API Tokens](docs/guides/PROFILES_WITH_TOKENS.md) - Simple multi-environment setup
 
 ### Advanced
 - [Shell Completion](docs/guides/COMPLETION_GUIDE.md) - Enable tab completion for faster commands

@@ -60,7 +60,6 @@ tests/
 ├── unit/                    # Unit tests (fast, isolated)
 │   ├── test_auth_api_token.py
 │   ├── test_auth_keystore.py
-│   ├── test_auth_okta.py
 │   ├── test_config_manager.py
 │   └── test_jenkins_client.py
 └── integration/             # Integration tests (slower, may require external services)
@@ -81,8 +80,6 @@ Common fixtures are defined in `tests/conftest.py`:
 
 - `temp_config_dir`: Temporary directory for config files
 - `mock_jenkins_url`: Mock Jenkins server URL
-- `mock_okta_config`: Mock Okta configuration
-- `sample_tokens`: Sample authentication tokens
 - `sample_jenkins_job_info`: Sample Jenkins job data
 - `sample_build_info`: Sample build information
 
@@ -149,13 +146,13 @@ class TestFeatureIntegration:
 
 ### Tests That Need Fixes
 
-The following test files have failures due to mismatches with the actual implementation:
+The following test files have known gaps:
 
-1. **`test_auth_okta.py`**: Methods don't match actual OktaAuthenticator API
-2. **`test_config_manager.py`**: Schema validation requires Okta config in all profiles
-3. **`test_jenkins_client.py`**: Mock setup needs adjustment for actual client behavior
+1. **`test_jenkins_client.py`**: Currently skipped via a module-level
+   `pytest.mark.skip`. Mock setup needs to be rewritten to match the current
+   `JenkinsClient` API.
 
-These tests provide a good starting point but need to be updated to match the current implementation.
+These tests provide a starting point but need work to come back online.
 
 ## CI/CD Integration
 
@@ -221,7 +218,7 @@ pytest --tb=long
 
 To improve test coverage:
 
-1. Fix failing tests in `test_auth_okta.py`, `test_config_manager.py`, and `test_jenkins_client.py`
+1. Rewrite `test_jenkins_client.py` against the current client API
 2. Add tests for command modules (`jctl/commands/`)
 3. Add tests for utility modules (`jctl/utils/`)
 4. Add integration tests for end-to-end workflows

@@ -20,12 +20,11 @@
 
 ### Delivered Features
 
-**Authentication** (5 commands):
-- ✅ API Token authentication
-- ✅ OAuth 2.0 with PKCE
+**Authentication**:
+- ✅ Jenkins API token authentication
 - ✅ OS-native keystore integration
 - ✅ Secure credential storage
-- ✅ Login, logout, status, refresh, token commands
+- ✅ `token`, `status`, `logout` commands
 
 **Job Management** (2 commands):
 - ✅ Trigger jobs with parameters

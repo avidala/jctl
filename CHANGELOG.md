@@ -55,6 +55,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed (Breaking)
+
+- Okta OAuth / SSO authentication has been removed. The `jctl auth login` and `jctl auth refresh` commands, the `OktaConfig` profile section, the `JCTL_OKTA_*` environment variables, the `--okta-domain` / `--okta-client-id` flags on `jctl config add-profile`, and the `authlib` dependency are all gone. Jenkins API token (`jctl auth token`) is now the only supported authentication method. Existing OAuth tokens in the OS keystore are no longer read. Existing configs containing an `okta:` block still load (Pydantic config is `extra = "allow"`), but the field is ignored.
+
 ### Added
 
 - `LICENSE` file at the repo root (MIT). `pyproject.toml` already declared `license = "MIT"` and the README had the badge — only the file itself was missing, which blocked Homebrew/PyPI license validation.

@@ -30,7 +30,6 @@ Complete guide for setting up a development environment and contributing to jctl
 ### Optional (for testing)
 
 - **Jenkins instance** - For integration testing
-- **Okta developer account** - For OAuth testing
 
 ## Initial Setup
 
@@ -497,10 +496,10 @@ jctl --debug auth status
 
 # Clear and re-authenticate
 jctl auth logout
-jctl --debug auth login
+jctl --debug auth token
 
 # Check stored credentials
-python -c "from jctl.auth.keystore import SecureKeystore; k = SecureKeystore(); print(k.retrieve('jenkins_oauth_access_token'))"
+python -c "from jctl.auth.keystore import SecureKeystore; k = SecureKeystore(); print(k.retrieve('jenkins_token'))"
 ```
 
 #### API Connection Issues
@@ -709,7 +708,6 @@ chmod 600 ~/.jctl/config.yaml
 - **Click Docs**: https://click.palletsprojects.com/
 - **pytest Docs**: https://docs.pytest.org/
 - **Jenkins API**: https://www.jenkins.io/doc/book/using/remote-access-api/
-- **OAuth 2.0**: https://oauth.net/2/
 
 ---
 

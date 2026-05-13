@@ -12,17 +12,6 @@ class JenkinsConfig(BaseModel):
     timeout: int = Field(default=30, description="Request timeout in seconds")
 
 
-class OktaConfig(BaseModel):
-    """Okta SSO configuration."""
-
-    domain: str = Field(..., description="Okta domain (e.g., company.okta.com)")
-    client_id: str = Field(..., description="OAuth client ID")
-    redirect_uri: str = Field(
-        default="http://localhost:8989/callback", description="OAuth redirect URI"
-    )
-    scopes: list[str] = Field(default=["openid", "profile", "email"], description="OAuth scopes")
-
-
 class OutputConfig(BaseModel):
     """Output formatting configuration."""
 
@@ -42,7 +31,6 @@ class ProfileConfig(BaseModel):
     """Configuration profile."""
 
     jenkins: JenkinsConfig
-    okta: OktaConfig
     output: OutputConfig = Field(default_factory=OutputConfig)
     ssl: SSLConfig = Field(default_factory=SSLConfig)
 
@@ -77,4 +65,4 @@ class Config(BaseModel):
     class Config:
         """Pydantic config."""
 
-        extra = "allow"  # Allow extra fields for forward compatibility
+        extra = "allow"

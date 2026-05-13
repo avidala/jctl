@@ -2,22 +2,15 @@
 
 ## Overview
 
-The Jenkins API Token is the simplest way to authenticate `jctl` with your Jenkins instance. It's perfect for:
-- **Quick testing** - Get started immediately without OAuth setup
-- **Personal automation** - Scripts and local development
-- **Temporary access** - When you need Jenkins access quickly
-
-For long-term production use, OAuth 2.0 (Okta SSO) is recommended, but API tokens work great for day-to-day usage.
+`jctl` authenticates to Jenkins using a Jenkins API token. The token is sent
+as HTTP Basic auth on every request and stored locally in your OS keystore.
 
 ## Getting Your Jenkins API Token
 
 ### Step 1: Log into Jenkins
 
-Navigate to your Jenkins instance:
-- **Staging**: https://jenkins-stg.example.com/
-- **Production**: https://jenkins.example.com/
-
-Log in with your H2O.ai Okta credentials (via SSO).
+Navigate to your Jenkins instance in a browser and log in normally (Jenkins
+may delegate this to your IdP — that part is outside of jctl's scope).
 
 ### Step 2: Navigate to Your User Profile
 
@@ -199,7 +192,7 @@ Remove the token from your local keychain:
 jctl auth logout
 ```
 
-This clears all stored credentials (both API tokens and OAuth tokens).
+This clears the stored API token from the OS keystore.
 
 ## Security Best Practices
 
@@ -278,37 +271,6 @@ This clears all stored credentials (both API tokens and OAuth tokens).
    curl -I https://jenkins-stg.example.com/
    ```
 
-## API Token vs OAuth
-
-| Feature | API Token | OAuth (Okta SSO) |
-|---------|-----------|------------------|
-| Setup time | 5 minutes | 30+ minutes |
-| Expires | Never* | 1 hour (auto-refresh) |
-| Permissions | Your full Jenkins access | Your full Jenkins access |
-| Revocation | Manual in Jenkins | Automatic on Okta logout |
-| Best for | Personal use, testing | Production, automation |
-| Complexity | Very simple | More complex |
-| Security | Good | Better (centralized control) |
-
-*API tokens can be revoked manually but don't expire automatically
-
-## When to Use Each
-
-### Use API Token When:
-- ✅ Getting started with jctl
-- ✅ Personal laptop/workstation
-- ✅ Testing and development
-- ✅ You want something simple
-- ✅ You manage your own tokens
-
-### Use OAuth When:
-- ✅ Production automation
-- ✅ Shared CI/CD systems
-- ✅ Organization requires SSO
-- ✅ Need centralized access control
-- ✅ Want automatic token refresh
-- ✅ Compliance requirements
-
 ## Next Steps
 
 Now that you have API token authentication configured:
@@ -336,11 +298,6 @@ Now that you have API token authentication configured:
    jctl config set aliases.newenv "job trigger deploy-staging"
    jctl newenv  # Now triggers the job!
    ```
-
-5. **Consider OAuth** (for production):
-   - See [OKTA_AUTH_GUIDE.md](OKTA_AUTH_GUIDE.md) for OAuth setup
-   - Requires Okta OAuth app configuration
-   - More steps but better for long-term use
 
 ## Support
 

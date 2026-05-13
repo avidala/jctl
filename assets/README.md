@@ -39,7 +39,7 @@ This directory contains all branding and logo assets for the jctl project.
 
 - **`org-banner.svg`** - Organization banner (1200x300px)
   - Use in: Website headers, email signatures, LinkedIn
-  - Features: Full branding with tech stack badges (Jenkins, Okta, Python, CLI)
+  - Features: Full branding with tech stack badges (Jenkins, Python, CLI)
   - Horizontal layout with gradient background
 
 ## How to Set GitHub Repository Icon
@@ -131,7 +131,7 @@ If you create a GitHub organization:
 - **Pipeline Icon**: Three vertical pipes representing CI/CD workflows
 - **Security Shield**: Purple-pink gradient with checkmark
 - **Animated Particles**: Data flow visualization (SVG only)
-- **Tech Stack Badges**: Jenkins, Okta, Python, CLI
+- **Tech Stack Badges**: Jenkins, Python, CLI
 - **Color Scheme**:
   - Primary: Blue (#3b82f6) to Cyan (#06b6d4)
   - Accent: Purple (#8b5cf6) to Pink (#ec4899)

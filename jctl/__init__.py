@@ -1,6 +1,7 @@
 """jctl - Jenkins Control CLI.
 
-A command-line interface tool for managing Jenkins pipelines with Okta SSO authentication.
+A command-line interface tool for managing Jenkins pipelines using
+Jenkins API token authentication.
 """
 
 __version__ = "0.2.2"

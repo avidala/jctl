@@ -50,7 +50,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 - Python 3.10 or higher
 - Git
 - Access to a Jenkins instance for testing (optional but recommended)
-- Basic understanding of Jenkins, OAuth 2.0, and CLI tools
+- Basic understanding of Jenkins API tokens and CLI tools
 
 ### Finding Issues to Work On
 
@@ -105,7 +105,7 @@ If you have access to a Jenkins instance for testing:
 jctl config init
 
 # Configure authentication (use a test instance!)
-jctl auth token  # or jctl auth login for OAuth
+jctl auth token
 ```
 
 ## How to Contribute
@@ -355,7 +355,7 @@ def test_api_token_storage(temp_config_dir):
 - **Test Names**: Descriptive names explaining what is tested
 - **AAA Pattern**: Arrange, Act, Assert
 - **Fixtures**: Use pytest fixtures for common setup
-- **Mocking**: Mock external dependencies (Jenkins API, Okta, etc.)
+- **Mocking**: Mock external dependencies (Jenkins API, OS keystore, etc.)
 - **Async Tests**: Use `pytest-asyncio` for async code
 
 ### Running Tests

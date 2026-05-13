@@ -4,12 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**jctl** (Jenkins Control CLI) is a Python command-line tool for managing Jenkins pipelines with dual authentication support (Okta OAuth 2.0 and API tokens).
+**jctl** (Jenkins Control CLI) is a Python command-line tool for managing Jenkins pipelines using Jenkins API token authentication.
 
 **Key Technologies:**
 - Click 8.1.7+ (CLI framework)
 - httpx 0.25.2+ (async HTTP client)
-- Authlib 1.3.0+ (OAuth 2.0)
 - keyring 24.3.0+ (OS keystore integration)
 - Pydantic 2.5.0+ (config validation)
 - Rich 13.7.0+ (terminal UI)
@@ -73,19 +72,18 @@ jctl --version
 
 1. **CLI Layer** (`jctl/commands/`) - Click command groups for user interaction
 2. **Business Logic Layer** - Core functionality:
-   - `jctl/auth/` - Authentication (Okta OAuth, API tokens)
+   - `jctl/auth/` - Jenkins API token authentication
    - `jctl/jenkins/` - Jenkins API integration
    - `jctl/config/` - Configuration management
    - `jctl/utils/` - Utilities (output, logging, completion)
 3. **Storage Layer** - OS keystore (primary) with encrypted fallback
-4. **External Services** - Jenkins REST API, Okta OAuth API
+4. **External Services** - Jenkins REST API
 
 ### Key Architectural Patterns
 
-**Dual Authentication Strategy:**
-- **API Tokens**: Simple username/token auth for automation (CI/CD, scripts)
-- **OAuth 2.0**: Okta SSO with PKCE for interactive use
-- Factory pattern in `utils/jenkins_client_factory.py` tries API token first, falls back to OAuth
+**Authentication:**
+- **API Tokens only** — Jenkins username + API token, stored in the OS keystore.
+- Client construction lives in `utils/jenkins_client_factory.py` and reads credentials from `APITokenAuthenticator`.
 
 **Credential Storage Hierarchy:**
 1. OS-native keystore (macOS Keychain, Linux Secret Service, Windows Credential Manager)
@@ -109,9 +107,7 @@ jctl/
 ├── cli.py                   # Main CLI definition, Click groups
 ├── constants.py             # Global constants
 ├── auth/                    # Authentication modules
-│   ├── okta.py             # OAuth 2.0 with PKCE implementation
-│   ├── api_token.py        # Simple API token auth
-│   ├── token_manager.py    # OAuth token lifecycle management
+│   ├── api_token.py        # Jenkins API token auth
 │   └── keystore.py         # Secure credential storage
 ├── jenkins/                 # Jenkins integration
 │   ├── client.py           # Jenkins REST API client
@@ -137,20 +133,11 @@ jctl/
 
 ### Authentication Flow
 
-**Okta OAuth (PKCE flow):**
-1. Generate PKCE code_verifier and code_challenge
-2. Build authorization URL and open browser
-3. User authenticates with Okta
-4. Receive callback with authorization code
-5. Exchange code for access_token and refresh_token
-6. Store tokens in OS keystore
-7. Use access_token for Jenkins API calls (Authorization: Bearer)
-8. Auto-refresh when expired
-
 **API Token:**
-- Username + Jenkins API token
-- Stored in OS keystore (service: "jctl", username: "{profile}_jenkins_username")
-- No expiration, no refresh needed
+- Username + Jenkins API token, captured by `jctl auth token` or `jctl config init`.
+- Stored in the OS keystore under service `"jctl"` (entries: `jenkins_username`, `jenkins_token`).
+- Sent as HTTP Basic auth (`Authorization: Basic …`) on every Jenkins request.
+- No expiration handling — rotate the token in Jenkins when needed and re-run `jctl auth token`.
 
 ### Configuration
 
@@ -163,10 +150,6 @@ profiles:
     jenkins:
       url: https://jenkins.example.com
       verify_ssl: true
-    okta:
-      domain: company.okta.com
-      client_id: jenkins-cli
-      redirect_uri: http://localhost:8989/callback
 defaults:
   timeout: 30
   retry_count: 3
@@ -206,9 +189,9 @@ tests/
 - New code in `jctl/commands/`, `jctl/utils/`, or `jctl/cli.py` should
   ship with unit tests so we stop the bleeding even while back-fill is
   pending.
-- Security-critical paths (authentication, keystore, token manager)
-  must be tested thoroughly — they are the only paths currently above
-  the project average.
+- Security-critical paths (API token auth, keystore) must be tested
+  thoroughly — they are the only paths currently above the project
+  average.
 
 ### Running Tests
 - Use pytest with `-v` for verbose output
@@ -251,7 +234,7 @@ tests/
 - Credentials stored in OS keystore when available
 - Fallback encryption uses Fernet with machine-derived keys
 - Config files have 0600 permissions
-- No password storage (OAuth or API tokens only)
+- No password storage (API tokens only)
 - Input validation on all user-provided data
 
 ## Code Style
@@ -274,7 +257,6 @@ tests/
 
 - `JCTL_PROFILE` - Active profile name
 - `JCTL_JENKINS_URL` - Override Jenkins URL
-- `JCTL_OKTA_DOMAIN` - Override Okta domain
 - `JCTL_OUTPUT_FORMAT` - Output format (table/json/yaml/plain)
 - `JCTL_LOG_LEVEL` - Log level (DEBUG/INFO/WARNING/ERROR)
 - `JCTL_NO_COLOR` - Disable colored output

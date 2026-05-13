@@ -235,7 +235,7 @@ jctl pipeline list --filter "upgrade"
 
 ## Next Steps
 
-- [PROFILES_WITH_TOKENS.md](PROFILES_WITH_TOKENS.md) - Detailed profile setup
+- [PROFILES_GUIDE.md](PROFILES_GUIDE.md) - Detailed profile setup
 - [COMPLETION_GUIDE.md](COMPLETION_GUIDE.md) - Tab completion setup
 - [README.md](README.md) - Full command reference
 

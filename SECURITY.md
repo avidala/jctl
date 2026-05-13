@@ -12,22 +12,20 @@ The following versions of jctl are currently supported with security updates:
 
 ### Authentication & Authorization
 
-jctl implements multiple layers of security for authentication:
+jctl uses Jenkins API tokens for authentication:
 
-1. **OAuth 2.0 with PKCE** - Okta SSO integration using industry-standard OAuth 2.0 flow with PKCE (Proof Key for Code Exchange) for enhanced security
-2. **API Token Support** - Alternative authentication using Jenkins API tokens for automation scenarios
-3. **Secure Credential Storage** - Multiple storage mechanisms:
+1. **Jenkins API Tokens** - Username + Jenkins API token, sent as HTTP Basic auth over HTTPS.
+2. **Secure Credential Storage** - Two storage mechanisms:
    - **OS-Native Keystore** (Primary): macOS Keychain, Linux SecretService, Windows Credential Manager
    - **Encrypted Fallback**: Fernet encryption with machine-derived keys when OS keystore unavailable
-4. **Token Management** - Automatic token refresh and validation
+3. **No Password Storage** - Only API tokens are stored; rotate the token in Jenkins and re-run `jctl auth token` to update.
 
 ### Data Protection
 
-- **No Hardcoded Credentials** - All credentials are stored securely in OS keystore or encrypted storage
+- **No Hardcoded Credentials** - All credentials are stored in the OS keystore or encrypted fallback storage
 - **Machine-Derived Encryption Keys** - Fallback encryption uses PBKDF2 with machine-specific identifiers
 - **SSL/TLS Verification** - All API calls use HTTPS with certificate verification (configurable)
 - **No Secrets in Logs** - Sensitive data is never logged even in debug mode
-- **Secure Token Storage** - OAuth tokens stored separately from configuration files
 
 ### Network Security
 
@@ -103,9 +101,8 @@ We aim to respond to security reports according to the following timeline:
 When using jctl, follow these security best practices:
 
 #### Credential Management
-- **Use OAuth** - Prefer Okta SSO over API tokens when possible
-- **Rotate Tokens** - Regularly rotate API tokens if using token authentication
-- **Limit Token Scope** - Use least-privilege principle for API tokens
+- **Rotate Tokens** - Regularly rotate Jenkins API tokens
+- **Limit Token Scope** - Use least-privilege principle when generating tokens in Jenkins
 - **Logout When Done** - Use `jctl auth logout` when finished with authenticated sessions
 
 #### Configuration Security
@@ -121,8 +118,7 @@ When using jctl, follow these security best practices:
 - **Audit Logs** - Review Jenkins audit logs for unexpected activity
 
 #### CI/CD Usage
-- **Use API Tokens** - Not OAuth for automation
-- **Secret Management** - Store tokens in CI/CD secrets manager
+- **Secret Management** - Store Jenkins API tokens in your CI/CD secrets manager
 - **Limit Permissions** - Grant minimal required Jenkins permissions
 - **Rotate Regularly** - Automate token rotation in CI/CD
 
@@ -191,7 +187,7 @@ Debug mode (`--debug`) outputs detailed logging:
 **Security Features Implemented**:
 - OS-native keystore integration
 - Encrypted credential fallback
-- OAuth 2.0 with PKCE
+- Jenkins API token authentication
 - Proper exception handling
 - Retry logic with rate limiting
 - SSL/TLS certificate verification
@@ -201,8 +197,7 @@ Debug mode (`--debug`) outputs detailed logging:
 ### Data Handling
 
 jctl handles the following sensitive data:
-- **OAuth Tokens** - Stored in OS keystore or encrypted storage
-- **API Tokens** - Stored in OS keystore or encrypted storage
+- **Jenkins API Tokens** - Stored in OS keystore or encrypted storage
 - **Configuration** - Plain text but no secrets (in `~/.jctl/config.yaml`)
 - **Credentials** - Never stored in plain text
 - **Logs** - Sensitive data redacted even in debug mode
@@ -214,19 +209,16 @@ jctl does not:
 - Send data to third parties
 - Store credentials in plain text
 - Log sensitive information
-- Transmit data outside Jenkins/Okta APIs
+- Transmit data outside the Jenkins API
 
 ## References
 
 ### Security Standards & Frameworks
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [OAuth 2.0 RFC 6749](https://tools.ietf.org/html/rfc6749)
-- [PKCE RFC 7636](https://tools.ietf.org/html/rfc7636)
 - [Fernet Encryption](https://cryptography.io/en/latest/fernet/)
 
 ### Related Security Documentation
 - [Jenkins Security](https://www.jenkins.io/doc/book/security/)
-- [Okta Security](https://www.okta.com/security/)
 - [Python Keyring](https://keyring.readthedocs.io/)
 
 ## Contact

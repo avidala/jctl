@@ -1,8 +1,6 @@
 """Secure credential storage using OS keystore."""
 
-import json
 import platform
-from typing import Any
 
 import keyring
 from cryptography.fernet import Fernet
@@ -151,49 +149,9 @@ class SecureKeystore:
         except Exception as e:
             logger.warning(f"Failed to delete encrypted credential: {e}")
 
-    def store_tokens(self, tokens: dict[str, Any]) -> None:
-        """Store authentication tokens.
-
-        Args:
-            tokens: Token dictionary (access_token, refresh_token, etc.)
-
-        Raises:
-            KeystoreError: If storage fails
-        """
-        try:
-            tokens_json = json.dumps(tokens)
-            self.store("tokens", tokens_json)
-            logger.info("Stored authentication tokens")
-        except Exception as e:
-            raise KeystoreError(f"Failed to store tokens: {e}") from e
-
-    def retrieve_tokens(self) -> dict[str, Any] | None:
-        """Retrieve authentication tokens.
-
-        Returns:
-            Token dictionary or None if not found
-
-        Raises:
-            KeystoreError: If retrieval fails
-        """
-        try:
-            tokens_json = self.retrieve("tokens")
-            if tokens_json:
-                tokens = json.loads(tokens_json)
-                logger.debug("Retrieved authentication tokens")
-                return tokens
-            return None
-        except Exception as e:
-            logger.error(f"Failed to retrieve tokens: {e}")
-            return None
-
-    def delete_tokens(self) -> None:
-        """Delete authentication tokens."""
-        self.delete("tokens")
-        logger.info("Deleted authentication tokens")
-
     def clear_all(self) -> None:
         """Clear all stored credentials."""
-        self.delete_tokens()
+        self.delete("jenkins_username")
+        self.delete("jenkins_token")
         self.delete("encryption_key")
         logger.info("Cleared all credentials from keystore")
