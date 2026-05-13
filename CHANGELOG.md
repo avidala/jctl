@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Part of the AVIDALA DevOps Tools suite*
 
+## [0.2.1](https://github.com/avidala/jctl/compare/v0.2.0...v0.2.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* **ci:** dedent poet output before re-indenting, to fix 4-space indent bug ([#26](https://github.com/avidala/jctl/issues/26)) ([f269a97](https://github.com/avidala/jctl/commit/f269a9782ace63a0900d6ceeda0a4bed7609cbb8))
+* **ci:** install jctl from GitHub release sdist instead of PyPI ([#22](https://github.com/avidala/jctl/issues/22)) ([97ac7a8](https://github.com/avidala/jctl/commit/97ac7a865ea3e706a3fdf679b40effef61e80fbd))
+* **ci:** install setuptools so poet can import pkg_resources ([#24](https://github.com/avidala/jctl/issues/24)) ([6bcb612](https://github.com/avidala/jctl/commit/6bcb61229fc51ee5eb202a4a2128b15fb9108df6))
+* **ci:** normalize bump resource names + idempotent PR creation ([#28](https://github.com/avidala/jctl/issues/28)) ([c16bd3f](https://github.com/avidala/jctl/commit/c16bd3f5d2ce9198581d56e4e94b936d5643bdb3))
+* **ci:** pin setuptools&lt;81 so poet can import pkg_resources ([#25](https://github.com/avidala/jctl/issues/25)) ([a07af5f](https://github.com/avidala/jctl/commit/a07af5f190ec0df6e0b166cb278b083728cfa148))
+* **ci:** use plain --force in bump workflow's push ([#27](https://github.com/avidala/jctl/issues/27)) ([4fbd30d](https://github.com/avidala/jctl/commit/4fbd30d078a1cfda52a66376aa4aedae369ccac3))
+
 ## [0.2.0](https://github.com/avidala/jctl/compare/v0.1.0...v0.2.0) (2026-05-13)
 
 
