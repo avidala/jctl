@@ -40,14 +40,18 @@ def filter_resources(poet_output: str) -> str:
 
 
 def normalize_indent(text: str) -> str:
-    """Prepend the 2-space class-body indent to every non-empty line.
+    """Normalize the resource block to `resource`/`end` at 2 spaces, inner lines at 4.
 
-    Poet emits resources at column 0 (with inner lines at 2 spaces). The formula
-    needs them shifted right by 2 so `resource`/`end` land at 2 spaces and inner
-    `url`/`sha256` lines land at 4 spaces.
+    Poet's output indent has varied across versions: older releases emitted at
+    column 0, current releases emit pre-indented by 2 spaces. We dedent to a
+    known baseline first, then prepend exactly 2 spaces to every non-empty
+    line — this is correct regardless of poet's chosen base indent.
     """
+    import textwrap
+
+    dedented = textwrap.dedent(text)
     out = []
-    for line in text.splitlines():
+    for line in dedented.splitlines():
         out.append("" if not line.strip() else "  " + line)
     return "\n".join(out).rstrip() + "\n"
 
