@@ -28,12 +28,11 @@ jobs:
         run: bandit -r jctl/ -ll
 
   # mypy is configured strictly in pyproject.toml but the codebase is
-  # not yet fully typed. Run it in advisory mode so type drift is
-  # visible in CI without blocking PRs. Promote `continue-on-error` to
-  # false once `mypy jctl/` is clean.
+  # not yet fully typed. Run it in advisory mode — `|| true` keeps the
+  # step green so the PR status summary stays useful. Remove the
+  # trailing `|| true` once `mypy jctl/` is clean.
   typecheck:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
@@ -47,4 +46,10 @@ jobs:
           pip install mypy==1.11.2
 
       - name: Run mypy (advisory)
-        run: mypy jctl/
+        run: |
+          echo "::group::mypy output (advisory — failures will not block this PR)"
+          mypy jctl/ || mypy_exit=$?
+          echo "::endgroup::"
+          if [ -n "${mypy_exit:-}" ]; then
+            echo "::warning::mypy reported $mypy_exit errors. Type drift is visible above but is not blocking; tighten `mypy jctl/` to unblock removing this advisory shim."
+          fi

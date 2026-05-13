@@ -182,11 +182,7 @@ class ConfigManager:
             default_profile="production",
             profiles={"production": default_profile},
             defaults=DefaultsConfig(),
-            aliases={
-                "ne": "job trigger hamc-new-environment",
-                "we": "job trigger hamc-wipe-environment",
-                "drift": "job trigger hamc-monitor-drift",
-            },
+            aliases={},
         )
 
         return config
@@ -249,11 +245,7 @@ class ConfigManager:
             default_profile=profile_name,
             profiles={profile_name: profile},
             defaults=DefaultsConfig(),
-            aliases={
-                "ne": "job trigger hamc-new-environment",
-                "we": "job trigger hamc-wipe-environment",
-                "drift": "job trigger hamc-monitor-drift",
-            },
+            aliases={},
         )
 
         # Save config

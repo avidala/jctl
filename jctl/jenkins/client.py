@@ -206,7 +206,7 @@ class JenkinsClient:
         """Get all jobs from Jenkins, optionally from a specific folder.
 
         Args:
-            folder: Optional folder path (e.g., "managed-cloud" or "managed-cloud/env-cycling")
+            folder: Optional folder path (e.g., "deploy" or "deploy/staging")
 
         Returns:
             List of job information dicts with full paths

@@ -26,7 +26,7 @@ def pipeline() -> None:
 @pipeline.command()
 @click.option("--filter", "-f", help="Filter pipelines by pattern")
 @click.option(
-    "--folder", help="Filter by folder (e.g., 'managed-cloud' or 'managed-cloud/env-cycling')"
+    "--folder", help="Filter by folder (e.g., 'deploy' or 'deploy/staging')"
 )
 @click.option("--status", type=click.Choice(["SUCCESS", "FAILED", "RUNNING", "ABORTED"]))
 @click.option("--limit", "-n", type=int, default=50, help="Number of pipelines to show")
@@ -238,8 +238,8 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
     """View or stream pipeline logs.
 
     Examples:
-        jctl pipeline logs managed-cloud/hamc-upgrade-pipeline 123
-        jctl pipeline logs managed-cloud/hamc-upgrade-pipeline --follow
+        jctl pipeline logs deploy/release-pipeline 123
+        jctl pipeline logs deploy/release-pipeline --follow
     """
     # Get authenticated client
     client = get_jenkins_client(ctx)
@@ -326,8 +326,8 @@ def run(
     """Execute a pipeline with parameters.
 
     Examples:
-        jctl pipeline run managed-cloud/hamc-upgrade-pipeline -p environment=dev -p version=1.2.3
-        jctl pipeline run managed-cloud/hamc-upgrade-pipeline -p environment=staging --wait
+        jctl pipeline run deploy/release-pipeline -p environment=dev -p version=1.2.3
+        jctl pipeline run deploy/release-pipeline -p environment=staging --wait
     """
     params = dict(p.split("=", 1) for p in param) if param else {}
 
