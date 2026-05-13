@@ -123,8 +123,11 @@ jobs:
           # "stale info". this branch is bot-managed end-to-end, safe to overwrite.
           git push --force origin "$BRANCH"
 
-          if gh pr view "$BRANCH" --repo avidala/homebrew-jctl >/dev/null 2>&1; then
-            echo "PR already exists for $BRANCH; updated branch."
+          # `gh pr view <branch> --repo X` doesn't reliably match by branch when crossing
+          # repos; `gh pr list --head <branch>` is the documented way to check existence.
+          EXISTING_PR=$(gh pr list --repo avidala/homebrew-jctl --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #$EXISTING_PR already exists for $BRANCH; branch updated by force-push."
           else
             gh pr create \
               --repo avidala/homebrew-jctl \

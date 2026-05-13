@@ -8,7 +8,8 @@ The resources block is delimited in the formula by:
 
 Resources for jeepney and secretstorage are intentionally kept in the
 `on_linux do` block in the formula and are filtered out of the poet output
-to avoid duplication.
+to avoid duplication. The formula's own package ("jctl") is also filtered
+out so brew audit doesn't complain about a self-referential resource.
 """
 
 from __future__ import annotations
@@ -20,23 +21,49 @@ from pathlib import Path
 
 # resources managed in the formula's on_linux block, not by poet
 ON_LINUX_RESOURCES = {"jeepney", "secretstorage"}
+# the formula's own package — poet emits it as a resource, brew audit rejects.
+SELF_RESOURCE = "jctl"
 
 BEGIN_MARKER = "# BEGIN AUTO-GENERATED RESOURCES"
 END_MARKER = "# END AUTO-GENERATED RESOURCES"
 
 
+def canonical_name(name: str) -> str:
+    """Canonical PyPI/Homebrew resource name: lowercase, dots and underscores → hyphens.
+
+    Brew audit rejects resource names containing dots/underscores (e.g.
+    `jaraco.classes`, `pydantic_core`) — the canonical form is hyphenated
+    (`jaraco-classes`, `pydantic-core`).
+    """
+    return name.lower().replace("_", "-").replace(".", "-")
+
+
 def filter_resources(poet_output: str) -> str:
     """Drop resource blocks for names managed elsewhere in the formula."""
+    drop = ON_LINUX_RESOURCES | {SELF_RESOURCE}
     pattern = re.compile(
         r'^\s*resource\s+"([^"]+)"\s+do\b.*?^\s*end\s*$\n?',
         re.MULTILINE | re.DOTALL,
     )
 
     def keep(match: re.Match[str]) -> str:
-        name = match.group(1).lower().replace("_", "-")
-        return "" if name in ON_LINUX_RESOURCES else match.group(0)
+        return "" if canonical_name(match.group(1)) in drop else match.group(0)
 
     return pattern.sub(keep, poet_output)
+
+
+def normalize_resource_names(text: str) -> str:
+    """Rewrite each `resource "raw" do` line to use the canonical hyphenated name."""
+
+    def rename(match: re.Match[str]) -> str:
+        return f'{match.group(1)}"{canonical_name(match.group(2))}"{match.group(3)}'
+
+    return re.sub(
+        r'^(\s*resource\s+)"([^"]+)"(\s+do\b)',
+        rename,
+        text,
+        flags=re.MULTILINE,
+    )
 
 
 def normalize_indent(text: str) -> str:
@@ -90,7 +117,8 @@ def main() -> None:
     poet = args.resources.read_text()
 
     filtered = filter_resources(poet)
-    normalized = normalize_indent(filtered)
+    renamed = normalize_resource_names(filtered)
+    normalized = normalize_indent(renamed)
 
     formula = update_url_sha(formula, args.url, args.sha256)
     formula = replace_block(formula, normalized)
