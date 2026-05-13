@@ -4,12 +4,20 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build artifacts for (e.g. v0.2.0). The release at this tag must already exist.'
+        required: true
+        type: string
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
 
       - uses: actions/setup-python@v6
         with:
@@ -20,20 +28,28 @@ jobs:
           pip install build
           python -m build
 
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine release type
         id: release_type
         run: |
-          if [[ "${{ github.ref_name }}" == *"beta"* ]]; then
+          if [[ "${{ steps.tag.outputs.name }}" == *"beta"* || "${{ steps.tag.outputs.name }}" == *"rc"* ]]; then
             echo "prerelease=true" >> $GITHUB_OUTPUT
-            echo "Release type: Beta"
           else
             echo "prerelease=false" >> $GITHUB_OUTPUT
-            echo "Release type: Production"
           fi
 
-      - name: Create GitHub Release
+      - name: Attach artifacts to GitHub Release
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
         with:
+          tag_name: ${{ steps.tag.outputs.name }}
           files: dist/*
           generate_release_notes: true
           prerelease: ${{ steps.release_type.outputs.prerelease }}
