@@ -255,29 +255,54 @@ class JenkinsClient:
             return self._jenkins.build_job(name, parameters=parameters)
         return self._jenkins.build_job(name)
 
-    async def get_jobs(self, folder: str | None = None) -> list[dict[str, Any]]:
+    # How many levels of folder nesting `get_jobs()` returns in a single API
+    # call. 5 covers the great majority of real Jenkins setups (e.g. an org
+    # like `managed-cloud/MC-26.05.1/hamc-upgrade-environment` lives at depth
+    # 3, and multibranch pipelines push that another level). Bumpable per
+    # call via the `depth` arg.
+    DEFAULT_JOB_DEPTH = 5
+
+    @staticmethod
+    def _build_jobs_tree(depth: int) -> str:
+        """Build a Jenkins `tree=` query that recurses `depth` levels into
+        folders.
+
+        At each level we ask for the per-job summary fields plus a nested
+        `jobs[...]` clause; nesting that clause `depth` times lets one HTTP
+        round-trip return jobs up to `depth` levels deep.
+        """
+        fields = "name,url,color,lastBuild[number,result,timestamp,duration]"
+        query = fields
+        for _ in range(max(1, depth)):
+            query = f"{fields},jobs[{query}]"
+        return f"jobs[{query}]"
+
+    async def get_jobs(
+        self, folder: str | None = None, depth: int | None = None
+    ) -> list[dict[str, Any]]:
         """Get all jobs from Jenkins, optionally from a specific folder.
 
         Args:
-            folder: Optional folder path (e.g., "deploy" or "deploy/staging")
+            folder: Optional folder path (e.g., "deploy" or "deploy/staging").
+            depth: How many folder levels to recurse into. Defaults to
+                `DEFAULT_JOB_DEPTH` (5).
 
         Returns:
-            List of job information dicts with full paths
+            List of job information dicts with full paths.
         """
+        tree = self._build_jobs_tree(depth if depth is not None else self.DEFAULT_JOB_DEPTH)
         if folder:
-            # Get jobs from specific folder
             folder_path = "/job/" + "/job/".join(folder.split("/"))
-            path = f"{folder_path}/api/json?tree=jobs[name,url,color,lastBuild[number,result,timestamp,duration],jobs[name,url,color,lastBuild[number,result,timestamp,duration]]]"
+            path = f"{folder_path}/api/json?tree={tree}"
         else:
-            # Get all jobs recursively
-            path = "/api/json?tree=jobs[name,url,color,lastBuild[number,result,timestamp,duration],jobs[name,url,color,lastBuild[number,result,timestamp,duration]]]"
+            path = f"/api/json?tree={tree}"
 
         response = await self._request("GET", path)
         data = response.json()
         jobs = data.get("jobs", [])
 
-        # Flatten nested jobs (folders contain jobs)
-        flattened = []
+        # Flatten nested jobs (folders contain jobs).
+        flattened: list[dict[str, Any]] = []
         self._flatten_jobs(jobs, flattened, folder or "")
         return flattened
 
