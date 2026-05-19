@@ -1,6 +1,7 @@
 """Jenkins API client."""
 
 import asyncio
+import re
 from typing import Any
 
 import httpx
@@ -21,6 +22,45 @@ class JenkinsAPIError(Exception):
     """Jenkins API error."""
 
     pass
+
+
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _clean_response_body(text: str, max_len: int = 200) -> str:
+    """Strip HTML tags so Jenkins' HTML 404 pages don't end up dumped raw
+    into the user's terminal.
+
+    Prefer the <title> when present (Jenkins error pages put the actual
+    message there); fall back to a length-capped, whitespace-collapsed
+    text-only render.
+    """
+    if not text:
+        return ""
+    title = re.search(r"<title>([^<]+)</title>", text, re.IGNORECASE)
+    if title and title.group(1).strip():
+        return title.group(1).strip()
+    stripped = _WHITESPACE_RE.sub(" ", _HTML_TAG_RE.sub(" ", text)).strip()
+    if len(stripped) > max_len:
+        stripped = stripped[: max_len - 1].rstrip() + "…"
+    return stripped
+
+
+def _format_network_error(exc: httpx.RequestError) -> str:
+    """Build a useful one-line message from an httpx ConnectError/etc."""
+    name = type(exc).__name__
+    detail = str(exc).strip()
+    host: str | None = None
+    try:
+        host = exc.request.url.host  # type: ignore[union-attr]
+    except Exception:  # noqa: BLE001
+        host = None
+    if host and not detail:
+        return f"{name}: could not reach {host}"
+    if host:
+        return f"{name}: {detail} ({host})"
+    return f"{name}: {detail}" if detail else name
 
 
 def _should_retry_http_error(exception: Exception) -> bool:
@@ -92,6 +132,10 @@ class JenkinsClient:
             timeout=timeout_config if timeout == 30.0 else timeout,
             verify=verify_ssl,
             auth=auth_value,
+            # Jenkins POST endpoints like /stop and /build return 302 to the
+            # job page on success. Without follow_redirects, raise_for_status
+            # treats the 302 as an error.
+            follow_redirects=True,
         )
 
         self._crumb: dict[str, str] | None = None
@@ -115,6 +159,23 @@ class JenkinsClient:
             # Jenkins may not have CSRF protection enabled
             return {}
 
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        """Make HTTP request to Jenkins API with automatic retry logic.
+
+        Wraps `_do_request` so the final RequestError after tenacity exhausts
+        retries surfaces as a `JenkinsAPIError` with a readable message
+        (httpx ConnectError's `str()` is often empty).
+        """
+        try:
+            return await self._do_request(method, path, **kwargs)
+        except httpx.RequestError as e:
+            raise JenkinsAPIError(_format_network_error(e)) from e
+
     @retry(
         retry=retry_if_exception_type((httpx.HTTPStatusError, httpx.RequestError)),
         stop=stop_after_attempt(3),
@@ -124,13 +185,13 @@ class JenkinsClient:
             f"Retrying request (attempt {retry_state.attempt_number}) after error: {retry_state.outcome.exception()}"
         ),
     )
-    async def _request(
+    async def _do_request(
         self,
         method: str,
         path: str,
         **kwargs: Any,
     ) -> httpx.Response:
-        """Make HTTP request to Jenkins API with automatic retry logic.
+        """Inner retry-decorated request. Do not call directly.
 
         Automatically retries on:
         - Network errors (httpx.RequestError)
@@ -139,17 +200,6 @@ class JenkinsClient:
         - 504 (Gateway Timeout)
 
         Uses exponential backoff: 1s, 2s, 4s (max 3 attempts)
-
-        Args:
-            method: HTTP method
-            path: API path
-            **kwargs: Additional arguments for httpx
-
-        Returns:
-            Response object
-
-        Raises:
-            JenkinsAPIError: If request fails after all retries
         """
         # Add crumb for POST requests
         if method.upper() in ["POST", "PUT", "DELETE"]:
@@ -167,10 +217,13 @@ class JenkinsClient:
             if e.response.status_code in [429, 503, 504]:
                 logger.debug(f"Retryable HTTP error {e.response.status_code}: {e.response.text}")
                 raise  # Let tenacity handle the retry
-            # Don't retry other HTTP errors (4xx, 5xx)
-            raise JenkinsAPIError(
-                f"Jenkins API error: {e.response.status_code} - {e.response.text}"
-            ) from e
+            # Don't retry other HTTP errors (4xx, 5xx). Strip HTML so the
+            # message stays readable in the terminal.
+            body = _clean_response_body(e.response.text)
+            msg = f"Jenkins API error: {e.response.status_code}"
+            if body:
+                msg = f"{msg} — {body}"
+            raise JenkinsAPIError(msg) from e
         except httpx.RequestError as e:
             logger.debug(f"Network error (will retry): {e}")
             raise  # Let tenacity handle the retry
