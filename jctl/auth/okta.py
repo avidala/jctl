@@ -23,24 +23,47 @@ class OktaAuthError(Exception):
 
 
 class CallbackHandler(BaseHTTPRequestHandler):
-    """HTTP server handler for OAuth callback."""
+    """HTTP server handler for OAuth callback.
+
+    Class-level attributes are used to carry results across to the calling
+    `login()` because BaseHTTPServer instantiates handlers per request.
+    `reset()` MUST be called before each login flow to clear stale state.
+    """
 
     auth_code: str | None = None
     error: str | None = None
+    expected_state: str | None = None
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.auth_code = None
+        cls.error = None
+        cls.expected_state = None
 
     def do_GET(self) -> None:
         """Handle GET request with OAuth callback."""
-        # Parse query parameters
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
         if "code" in params:
+            # CSRF: validate the state echoed back by Okta matches what we sent.
+            returned_state = (params.get("state") or [None])[0]
+            if (
+                not CallbackHandler.expected_state
+                or returned_state != CallbackHandler.expected_state
+            ):
+                CallbackHandler.error = "state_mismatch"
+                self._send_error_page(
+                    "Authentication Failed",
+                    "State parameter mismatch (possible CSRF).",
+                )
+                return
+
             CallbackHandler.auth_code = params["code"][0]
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(
-                b"""
+            self.wfile.write(b"""
                 <html>
                 <head><title>Authentication Successful</title></head>
                 <body style="font-family: sans-serif; text-align: center; padding: 50px;">
@@ -48,31 +71,32 @@ class CallbackHandler(BaseHTTPRequestHandler):
                     <p>You can close this window and return to the terminal.</p>
                 </body>
                 </html>
-                """
-            )
+                """)
         elif "error" in params:
             CallbackHandler.error = params["error"][0]
             error_desc = params.get("error_description", ["Unknown error"])[0]
-            self.send_response(400)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(
-                f"""
-                <html>
-                <head><title>Authentication Failed</title></head>
-                <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-                    <h1 style="color: red;">&#10007; Authentication Failed</h1>
-                    <p>{error_desc}</p>
-                    <p>Please return to the terminal and try again.</p>
-                </body>
-                </html>
-                """.encode()
-            )
+            self._send_error_page("Authentication Failed", error_desc)
         else:
             self.send_response(400)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"Invalid callback")
+
+    def _send_error_page(self, title: str, desc: str) -> None:
+        self.send_response(400)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        body = f"""
+            <html>
+            <head><title>{title}</title></head>
+            <body style="font-family: sans-serif; text-align: center; padding: 50px;">
+                <h1 style="color: red;">&#10007; {title}</h1>
+                <p>{desc}</p>
+                <p>Please return to the terminal and try again.</p>
+            </body>
+            </html>
+            """
+        self.wfile.write(body.encode())
 
     def log_message(self, format: str, *args: Any) -> None:
         """Suppress log messages."""
@@ -126,24 +150,29 @@ class OktaAuthenticator:
 
         return code_verifier, code_challenge
 
-    def login(self) -> dict[str, Any]:
+    def login(self, callback_timeout: int = 120) -> dict[str, Any]:
         """Perform OAuth login with PKCE.
+
+        Args:
+            callback_timeout: Seconds to wait for the browser to redirect
+                back before giving up.
 
         Returns:
             Token response dictionary
 
         Raises:
-            OktaAuthError: If authentication fails
+            OktaAuthError: If authentication fails or times out.
         """
         logger.info("Starting Okta OAuth authentication...")
 
-        # Generate PKCE pair
+        # Reset class-level handler state so a previous login attempt can't
+        # leak its code/error/expected_state into this one.
+        CallbackHandler.reset()
+
         code_verifier, code_challenge = self._generate_pkce_pair()
-
-        # Generate state for CSRF protection
         state = secrets.token_urlsafe(32)
+        CallbackHandler.expected_state = state
 
-        # Build authorization URL
         auth_params = {
             "client_id": self.client_id,
             "response_type": "code",
@@ -153,36 +182,38 @@ class OktaAuthenticator:
             "code_challenge": code_challenge,
             "code_challenge_method": "S256",
         }
-
         auth_url = f"{self.authorization_endpoint}?{urlencode(auth_params)}"
 
         logger.info(f"Opening browser for authentication: {self.domain}")
         print("\n🔐 Opening browser for Okta authentication...")
         print(f"    If browser doesn't open, visit: {auth_url}\n")
-
-        # Open browser
         webbrowser.open(auth_url)
 
-        # Start local server to receive callback
-        server_address = ("", 8989)
+        # Bind to loopback only so the callback URL isn't reachable from
+        # other interfaces on the same network. Set a timeout on the server
+        # so a never-completed browser flow doesn't block forever.
+        server_address = ("127.0.0.1", 8989)
         httpd = HTTPServer(server_address, CallbackHandler)
+        httpd.timeout = callback_timeout
 
-        logger.info("Waiting for OAuth callback...")
+        logger.info(f"Waiting for OAuth callback (timeout={callback_timeout}s)...")
         print("⏳ Waiting for authentication in browser...")
 
-        # Wait for one request (the callback)
+        # handle_request returns without setting code/error if the socket
+        # times out; treat that as a clear error rather than blocking.
         httpd.handle_request()
 
-        # Check for error
         if CallbackHandler.error:
             error_msg = f"OAuth error: {CallbackHandler.error}"
             logger.error(error_msg)
             raise OktaAuthError(error_msg)
 
-        # Get authorization code
         auth_code = CallbackHandler.auth_code
         if not auth_code:
-            raise OktaAuthError("No authorization code received")
+            raise OktaAuthError(
+                f"OAuth callback timed out after {callback_timeout}s — "
+                "did you complete the browser flow?"
+            )
 
         logger.info("Received authorization code, exchanging for tokens...")
 

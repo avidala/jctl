@@ -24,25 +24,24 @@ class TestOktaAuthenticator:
         assert auth.client_id == mock_okta_config["client_id"]
         assert auth.redirect_uri == mock_okta_config["redirect_uri"]
 
-    @pytest.mark.skip(reason="API changed: method renamed to _generate_pkce_pair")
-    def test_generate_pkce_challenge(self, mock_okta_config):
-        """Test PKCE challenge generation."""
+    def test_generate_pkce_pair(self, mock_okta_config):
+        """PKCE verifier ↔ challenge relationship per RFC 7636."""
         auth = OktaAuthenticator(
             domain=mock_okta_config["domain"],
             client_id=mock_okta_config["client_id"],
             redirect_uri=mock_okta_config["redirect_uri"],
         )
 
-        verifier, challenge = auth._generate_pkce_challenge()
+        verifier, challenge = auth._generate_pkce_pair()
 
-        # Verify verifier format
-        assert len(verifier) == 43  # 32 bytes base64url encoded
+        # Verifier: 32 bytes b64url-encoded with padding stripped == 43 chars,
+        # using only [A-Za-z0-9-_].
+        assert len(verifier) == 43
         assert all(
             c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
             for c in verifier
         )
 
-        # Verify challenge is SHA256 of verifier
         expected_challenge = (
             base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest())
             .decode()
@@ -153,17 +152,49 @@ class TestOktaAuthenticator:
         assert refreshed["access_token"] == "new_access_token"
         mock_client.post.assert_called_once()
 
-    @pytest.mark.skip(reason="API changed: _validate_state method no longer exists")
-    def test_validate_state(self, mock_okta_config):
-        """Test state validation."""
-        auth = OktaAuthenticator(
-            domain=mock_okta_config["domain"],
-            client_id=mock_okta_config["client_id"],
-            redirect_uri=mock_okta_config["redirect_uri"],
-        )
+    def test_callback_handler_validates_state(self):
+        """CallbackHandler must refuse a code with the wrong `state` param
+        (the CSRF check that was previously missing — OAuth 2.0 §10.12)."""
+        from io import BytesIO
+        from unittest.mock import MagicMock
 
-        # Valid state
-        assert auth._validate_state("test-state", "test-state") is True
+        from jctl.auth.okta import CallbackHandler
 
-        # Invalid state
-        assert auth._validate_state("test-state", "wrong-state") is False
+        CallbackHandler.reset()
+        CallbackHandler.expected_state = "EXPECTED-STATE-abc"
+
+        # Build a fake handler instance without standing up a real socket.
+        handler = CallbackHandler.__new__(CallbackHandler)
+        handler.path = "/callback?code=GRANTED&state=ATTACKER-STATE"
+        handler.wfile = BytesIO()
+        handler.send_response = MagicMock()
+        handler.send_header = MagicMock()
+        handler.end_headers = MagicMock()
+
+        handler.do_GET()
+
+        # State mismatch must not capture the code, and must record an error.
+        assert CallbackHandler.auth_code is None
+        assert CallbackHandler.error == "state_mismatch"
+
+    def test_callback_handler_accepts_matching_state(self):
+        """Matching state proceeds — auth_code captured."""
+        from io import BytesIO
+        from unittest.mock import MagicMock
+
+        from jctl.auth.okta import CallbackHandler
+
+        CallbackHandler.reset()
+        CallbackHandler.expected_state = "GOOD-STATE-xyz"
+
+        handler = CallbackHandler.__new__(CallbackHandler)
+        handler.path = "/callback?code=GRANTED&state=GOOD-STATE-xyz"
+        handler.wfile = BytesIO()
+        handler.send_response = MagicMock()
+        handler.send_header = MagicMock()
+        handler.end_headers = MagicMock()
+
+        handler.do_GET()
+
+        assert CallbackHandler.auth_code == "GRANTED"
+        assert CallbackHandler.error is None
