@@ -1,5 +1,6 @@
 """Jenkins client factory for creating authenticated clients."""
 
+import os
 import sys
 
 import click
@@ -34,7 +35,10 @@ def get_jenkins_client(ctx: click.Context) -> JenkinsClient:
         config = config_manager.get()
         profile = config.get_profile(ctx.obj.get("profile"))
 
-        jenkins_url = str(profile.jenkins.url)
+        # JCTL_JENKINS_URL lets the user point at a different Jenkins
+        # without touching their config — useful for one-off commands
+        # against e.g. a staging instance.
+        jenkins_url = os.environ.get("JCTL_JENKINS_URL") or str(profile.jenkins.url)
         verify_ssl = profile.jenkins.verify_ssl
 
         api_auth = APITokenAuthenticator()

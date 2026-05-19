@@ -10,35 +10,65 @@ from jctl import __version__
 from jctl.commands import auth, config, job, pipeline
 from jctl.utils.logging import setup_logging
 
-console = Console()
+_VALID_LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+
+
+def _no_color_requested() -> bool:
+    """True if the user has asked us to drop ANSI colors.
+
+    Honors `JCTL_NO_COLOR` (this tool's flag) and the widely-respected
+    `NO_COLOR` convention (https://no-color.org). Any non-empty value
+    counts as truthy.
+    """
+    return bool(os.environ.get("JCTL_NO_COLOR") or os.environ.get("NO_COLOR"))
+
+
+console = Console(no_color=_no_color_requested())
 
 
 @click.group()
 @click.version_option(version=__version__, prog_name="jctl")
-@click.option("--profile", default=None, help="Configuration profile to use")
-@click.option("--debug", is_flag=True, help="Enable debug mode")
+@click.option(
+    "--profile",
+    default=None,
+    envvar="JCTL_PROFILE",
+    help="Configuration profile to use (env: JCTL_PROFILE).",
+)
+@click.option("--debug", is_flag=True, help="Enable debug mode (shorthand for --log-level DEBUG).")
+@click.option(
+    "--log-level",
+    type=click.Choice(_VALID_LOG_LEVELS, case_sensitive=False),
+    default=None,
+    envvar="JCTL_LOG_LEVEL",
+    help="Logging verbosity (env: JCTL_LOG_LEVEL). Overrides --debug if both set.",
+)
 @click.option(
     "--output",
     type=click.Choice(["table", "json", "yaml", "plain"]),
     default="table",
-    help="Output format",
+    envvar="JCTL_OUTPUT_FORMAT",
+    help="Output format (env: JCTL_OUTPUT_FORMAT).",
 )
 @click.pass_context
-def cli(ctx: click.Context, profile: str | None, debug: bool, output: str) -> None:
+def cli(
+    ctx: click.Context,
+    profile: str | None,
+    debug: bool,
+    log_level: str | None,
+    output: str,
+) -> None:
     """jctl - Jenkins Control CLI.
 
     A flexible tool for managing Jenkins pipelines using API token authentication.
     """
-    # Setup logging based on debug flag
-    log_level = "DEBUG" if debug else "INFO"
-    setup_logging(level=log_level, debug=debug)
+    # --log-level takes precedence; --debug is a shorthand; otherwise INFO.
+    effective_level = (log_level or ("DEBUG" if debug else "INFO")).upper()
+    setup_logging(level=effective_level, debug=debug or effective_level == "DEBUG")
 
-    # Ensure ctx.obj exists and is a dict
     ctx.ensure_object(dict)
-
-    # Store global options in context
     ctx.obj["profile"] = profile
     ctx.obj["debug"] = debug
+    ctx.obj["log_level"] = effective_level
     ctx.obj["output"] = output
     ctx.obj["console"] = console
 
