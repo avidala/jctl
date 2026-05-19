@@ -3,11 +3,11 @@
 import asyncio
 import re
 import socket
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import requests
-from jenkins import Jenkins as JenkinsBase
+from jenkins import Jenkins as JenkinsBase  # type: ignore[import-untyped]
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -32,7 +32,7 @@ _sync_retry = retry(
     reraise=True,
     before_sleep=lambda retry_state: logger.debug(
         f"Retrying sync request (attempt {retry_state.attempt_number}) "
-        f"after error: {retry_state.outcome.exception()}"
+        f"after error: {retry_state.outcome.exception() if retry_state.outcome else 'unknown'}"
     ),
 )
 
@@ -136,9 +136,10 @@ class JenkinsClient:
 
         # HTTP client for custom endpoints
         # Use password (which contains API token) for authentication
-        auth_value = None
-        if username and (password or token):
-            auth_value = (username, password or token)
+        auth_value: tuple[str, str] | None = None
+        secret = password or token
+        if username and secret:
+            auth_value = (username, secret)
 
         # Configure separate connect and read timeouts for better performance
         timeout_config = httpx.Timeout(
@@ -201,7 +202,8 @@ class JenkinsClient:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True,
         before_sleep=lambda retry_state: logger.debug(
-            f"Retrying request (attempt {retry_state.attempt_number}) after error: {retry_state.outcome.exception()}"
+            f"Retrying request (attempt {retry_state.attempt_number}) after error: "
+            f"{retry_state.outcome.exception() if retry_state.outcome else 'unknown'}"
         ),
     )
     async def _do_request(
@@ -264,7 +266,9 @@ class JenkinsClient:
         Returns:
             Job information dict
         """
-        return self._jenkins.get_job_info(name)
+        # python-jenkins is untyped (no stubs), so its return is Any. Cast
+        # to make the declared return type honest for mypy.
+        return cast(dict[str, Any], self._jenkins.get_job_info(name))
 
     @_sync_retry
     def trigger_job(self, name: str, parameters: dict[str, Any] | None = None) -> int:
@@ -278,8 +282,8 @@ class JenkinsClient:
             Queue item ID
         """
         if parameters:
-            return self._jenkins.build_job(name, parameters=parameters)
-        return self._jenkins.build_job(name)
+            return cast(int, self._jenkins.build_job(name, parameters=parameters))
+        return cast(int, self._jenkins.build_job(name))
 
     # How many levels of folder nesting `get_jobs()` returns in a single API
     # call. 5 covers the great majority of real Jenkins setups (e.g. an org
@@ -372,7 +376,7 @@ class JenkinsClient:
         job_path = "/job/" + "/job/".join(name.split("/"))
         path = f"{job_path}/{number}/api/json"
         response = await self._request("GET", path)
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def get_build_log(self, name: str, number: int) -> str:
         """Get build console log.
@@ -465,7 +469,7 @@ class JenkinsClient:
         job_path = "/job/" + "/job/".join(name.split("/"))
         path = f"{job_path}/{number}/wfapi/describe"
         response = await self._request("GET", path)
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def get_pending_inputs(self, name: str, number: int) -> list[dict[str, Any]]:
         """Get pending input actions for a build.
@@ -481,7 +485,7 @@ class JenkinsClient:
         job_path = "/job/" + "/job/".join(name.split("/"))
         path = f"{job_path}/{number}/wfapi/pendingInputActions"
         response = await self._request("GET", path)
-        return response.json()
+        return cast(list[dict[str, Any]], response.json())
 
     async def abort_input(self, name: str, number: int, input_id: str) -> None:
         """Abort/skip an input step (pause pipeline).
@@ -529,7 +533,7 @@ class JenkinsClient:
         job_path = "/job/" + "/job/".join(name.split("/"))
         path = f"{job_path}/{number}/replay"
         response = await self._request("GET", path)
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def replay_run(self, name: str, number: int, script: str) -> None:
         """Execute replay with modified script.
@@ -559,7 +563,7 @@ class JenkinsClient:
         """
         path = f"/queue/item/{item_id}/api/json"
         response = await self._request("GET", path)
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def cancel_queue_item(self, item_id: int) -> None:
         """Cancel a queued item.
@@ -578,7 +582,7 @@ class JenkinsClient:
         Returns:
             List of job information dicts
         """
-        return self._jenkins.get_jobs()
+        return cast(list[dict[str, Any]], self._jenkins.get_jobs())
 
     async def validate_jenkinsfile(self, jenkinsfile: str) -> dict[str, Any]:
         """Validate a Jenkinsfile.
@@ -591,7 +595,7 @@ class JenkinsClient:
         """
         path = "/pipeline-model-converter/validate"
         response = await self._request("POST", path, data={"jenkinsfile": jenkinsfile})
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def close(self) -> None:
         """Close HTTP client."""
