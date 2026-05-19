@@ -181,10 +181,15 @@ def format_duration(milliseconds: int) -> str:
         milliseconds: Duration in milliseconds
 
     Returns:
-        Formatted duration string (e.g., "2m 30s")
+        Formatted duration string (e.g., "228ms", "8s", "2m 30s", "1h 5m").
     """
     if milliseconds < 0:
         return "N/A"
+
+    # Sub-second durations previously floored to "0s" — a lot of pipeline
+    # stages execute in <1s and showed up as no-op-looking rows.
+    if milliseconds < 1000:
+        return f"{milliseconds}ms"
 
     seconds = milliseconds // 1000
     if seconds < 60:

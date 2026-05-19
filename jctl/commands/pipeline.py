@@ -210,8 +210,11 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
     if workflow_info and "stages" in workflow_info:
         table = Table(show_header=True, title="Pipeline Stages")
         table.add_column("Stage", style="cyan", no_wrap=True)
-        table.add_column("Status", justify="center")
-        table.add_column("Duration", justify="right")
+        # `min_width=14` keeps "✓ SUCCESS" / "⊗ ABORTED" on one line — Rich
+        # auto-sized to the 6-char header before, wrapping the colored
+        # body to "SUCCE…" on a continuation row.
+        table.add_column("Status", justify="center", min_width=14, no_wrap=True)
+        table.add_column("Duration", justify="right", no_wrap=True)
 
         status_styles = {
             "SUCCESS": "[green]✓ SUCCESS[/green]",
@@ -452,7 +455,12 @@ def run(
 
                                     table = Table(show_header=True, box=None)
                                     table.add_column("Stage", style="cyan")
-                                    table.add_column("Status", justify="center")
+                                    table.add_column(
+                                        "Status",
+                                        justify="center",
+                                        min_width=14,
+                                        no_wrap=True,
+                                    )
 
                                     for stage in stages:
                                         stage_name = stage["name"]
