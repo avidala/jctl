@@ -52,20 +52,43 @@ class OutputFormatter:
         output = yaml.dump(data, default_flow_style=False, sort_keys=False)
         self.console.print(output)
 
-    def format_plain(self, data: Any) -> None:
+    def format_plain(self, data: Any, prefix: str = "") -> None:
         """Format as plain text.
 
-        Args:
-            data: Data to format
+        Nested dicts and lists are flattened with dot/index notation so the
+        output is always grep/awk friendly (no embedded Python `repr` blobs).
         """
-        if isinstance(data, (list, tuple)):
-            for item in data:
-                self.console.print(item)
-        elif isinstance(data, dict):
+        if isinstance(data, dict):
             for key, value in data.items():
-                self.console.print(f"{key}={value}")
+                full = key if not prefix else f"{prefix}.{key}"
+                if isinstance(value, dict):
+                    self.format_plain(value, prefix=full)
+                elif isinstance(value, (list, tuple)):
+                    self._format_plain_list(value, prefix=full)
+                else:
+                    self.console.print(f"{full}={value}", highlight=False)
+        elif isinstance(data, (list, tuple)):
+            if not prefix:
+                for item in data:
+                    self.console.print(item, highlight=False)
+            else:
+                self._format_plain_list(data, prefix=prefix)
         else:
-            self.console.print(str(data))
+            self.console.print(str(data), highlight=False)
+
+    def _format_plain_list(self, items: Any, prefix: str) -> None:
+        """Flatten a list value, recursing into dict elements with [i] indices."""
+        if all(not isinstance(v, (dict, list, tuple)) for v in items):
+            joined = ",".join(str(v) for v in items)
+            self.console.print(f"{prefix}={joined}", highlight=False)
+            return
+        for i, item in enumerate(items):
+            if isinstance(item, dict):
+                self.format_plain(item, prefix=f"{prefix}[{i}]")
+            elif isinstance(item, (list, tuple)):
+                self._format_plain_list(item, prefix=f"{prefix}[{i}]")
+            else:
+                self.console.print(f"{prefix}[{i}]={item}", highlight=False)
 
     def format_table(self, data: Any) -> None:
         """Format as table.

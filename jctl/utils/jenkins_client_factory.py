@@ -10,7 +10,10 @@ from jctl.config.manager import ConfigManager
 from jctl.jenkins.client import JenkinsClient
 from jctl.utils.logging import get_logger
 
+# Auth banner ("Using API token …") goes to stderr so json/yaml/plain
+# consumers see only their data on stdout. Errors go to stdout's Console.
 console = Console()
+stderr_console = Console(stderr=True)
 logger = get_logger(__name__)
 
 
@@ -39,7 +42,7 @@ def get_jenkins_client(ctx: click.Context) -> JenkinsClient:
             credentials = api_auth.get_credentials()
             assert credentials is not None  # guarded by is_authenticated
             username, token = credentials
-            console.print(f"[dim]Using API token authentication as {username}[/dim]")
+            stderr_console.print(f"[dim]Using API token authentication as {username}[/dim]")
             return JenkinsClient(
                 url=jenkins_url,
                 username=username,

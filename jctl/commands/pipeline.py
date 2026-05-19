@@ -117,13 +117,19 @@ def list(
     # Apply limit
     pipelines = pipelines[:limit]
 
-    console.print(f"[cyan]Found {len(pipelines)} pipeline(s)[/cyan]\n")
-
-    # Format output
-    if pipelines:
-        formatter.format(pipelines, output_format)
+    if output_format == "table":
+        console.print(f"[cyan]Found {len(pipelines)} pipeline(s)[/cyan]\n")
+        if pipelines:
+            formatter.format(pipelines, output_format)
+        else:
+            console.print("[yellow]No pipelines found matching criteria[/yellow]")
     else:
-        console.print("[yellow]No pipelines found matching criteria[/yellow]")
+        # json/yaml/plain: stdout stays machine-readable; the count goes to
+        # stderr so it doesn't break a downstream parser.
+        from rich.console import Console
+
+        Console(stderr=True).print(f"[cyan]Found {len(pipelines)} pipeline(s)[/cyan]")
+        formatter.format(pipelines, output_format)
 
 
 @pipeline.command()
@@ -134,9 +140,9 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
     """Show detailed pipeline status with stage information."""
     from rich.table import Table
 
-    from jctl.utils.output import format_duration
+    from jctl.utils.output import OutputFormatter, format_duration
 
-    # Get authenticated client
+    output_format = ctx.obj.get("output", "table")
     client = get_jenkins_client(ctx)
 
     # Fetch build info
@@ -160,6 +166,28 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
             sys.exit(EXIT_JENKINS_API_ERROR)
 
     build_info, workflow_info = asyncio.run(fetch_build_info())
+
+    # Machine-readable formats: emit structured data and return.
+    if output_format in ("json", "yaml", "plain"):
+        result: dict = {
+            "job": job_name,
+            "build_number": build_number,
+            "result": build_info.get("result"),
+            "duration_ms": build_info.get("duration", 0),
+            "timestamp": build_info.get("timestamp"),
+            "url": build_info.get("url"),
+        }
+        if workflow_info and "stages" in workflow_info:
+            result["stages"] = [
+                {
+                    "name": s.get("name"),
+                    "status": s.get("status"),
+                    "duration_ms": s.get("durationMillis", 0),
+                }
+                for s in workflow_info["stages"]
+            ]
+        OutputFormatter(console).format(result, output_format)
+        return
 
     console.print(f"\n[bold cyan]{job_name}[/bold cyan] [dim]#{build_number}[/dim]\n")
 
@@ -295,6 +323,20 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
         try:
             with console.status(f"[cyan]Fetching logs for {job_name} #{build_num}...[/cyan]"):
                 log_text = await client.get_build_log(job_name, build_num)
+
+            output_format = ctx.obj.get("output", "table")
+            if output_format in ("json", "yaml"):
+                from jctl.utils.output import OutputFormatter
+
+                OutputFormatter(console).format(
+                    {"job": job_name, "build_number": build_num, "log": log_text},
+                    output_format,
+                )
+                return
+            if output_format == "plain":
+                # plain == raw log text, no header decoration
+                print(log_text, end="")
+                return
 
             console.print(f"[cyan]Logs for:[/cyan] {job_name} #{build_num}\n")
             console.print(log_text, highlight=False)
