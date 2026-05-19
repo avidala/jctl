@@ -1,7 +1,10 @@
 """Main CLI definition and command groups."""
 
+from __future__ import annotations
+
 import os
 import sys
+from pathlib import Path
 
 import click
 from rich.console import Console
@@ -105,9 +108,7 @@ def _detect_shell() -> str | None:
     return None
 
 
-def _rc_file_for(shell: str):  # -> Path | None
-    from pathlib import Path
-
+def _rc_file_for(shell: str) -> Path | None:
     home = Path.home()
     if shell == "bash":
         return home / ".bashrc" if (home / ".bashrc").exists() else home / ".bash_profile"
@@ -118,7 +119,7 @@ def _rc_file_for(shell: str):  # -> Path | None
     return None
 
 
-def _is_already_installed(rc_path) -> bool:
+def _is_already_installed(rc_path: Path) -> bool:
     return rc_path.exists() and _COMPLETION_MARKER in rc_path.read_text()
 
 

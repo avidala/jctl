@@ -3,7 +3,7 @@
 import json
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from rich.console import Console
 from rich.table import Table
 
@@ -123,7 +123,7 @@ class OutputFormatter:
                 return
 
             # Get all keys from all dicts
-            keys = set()
+            keys: set[str] = set()
             for item in data:
                 if isinstance(item, dict):
                     keys.update(item.keys())
