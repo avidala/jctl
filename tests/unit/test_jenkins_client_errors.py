@@ -1,11 +1,12 @@
-"""Tests for the small error-formatting helpers in jctl.jenkins.client."""
+"""Tests for the small error-formatting + tree-query helpers in
+jctl.jenkins.client."""
 
 from unittest.mock import MagicMock
 
 import httpx
 import pytest
 
-from jctl.jenkins.client import _clean_response_body, _format_network_error
+from jctl.jenkins.client import JenkinsClient, _clean_response_body, _format_network_error
 
 
 class TestCleanResponseBody:
@@ -62,6 +63,30 @@ class TestFormatNetworkError:
         msg = _format_network_error(exc)
         assert msg.startswith("RequestError")
         assert "transport failure" in msg
+
+
+class TestJobsTreeQuery:
+    """Regression coverage for the QA-found depth-2 ceiling on get_jobs()."""
+
+    def test_default_depth_is_at_least_three(self):
+        # The original implementation hard-coded `jobs[..., jobs[...]]`
+        # (two nested clauses), so jobs at depth 3+ (e.g. the test fixture
+        # managed-cloud/MC-26.05.1/<job>) never appeared. We need ≥ 3 levels.
+        assert JenkinsClient.DEFAULT_JOB_DEPTH >= 3
+
+    def test_build_jobs_tree_nests_correctly(self):
+        # `_build_jobs_tree(N)` should produce N nested `jobs[...]` clauses.
+        for n in (1, 2, 3, 5):
+            q = JenkinsClient._build_jobs_tree(n)
+            # Outer wrapper + N nested clauses = N+1 occurrences of "jobs["
+            assert q.count("jobs[") == n + 1, q
+            # Each level requests the per-job fields
+            assert q.count("lastBuild[") == n + 1
+
+    def test_build_jobs_tree_minimum_one(self):
+        # Defensive: depth=0 collapses to a single level (avoid empty query).
+        q = JenkinsClient._build_jobs_tree(0)
+        assert "jobs[" in q
 
 
 @pytest.fixture
