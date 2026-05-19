@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import platform
+from collections.abc import Callable
 from pathlib import Path
 
 import keyring
@@ -54,7 +55,7 @@ class _FileStore:
     where each ciphertext was produced by ``Fernet(<machine-derived key>)``.
     """
 
-    def __init__(self, key_provider):
+    def __init__(self, key_provider: Callable[[], bytes]) -> None:
         self.path = _config_dir() / "credentials.enc"
         self._key_provider = key_provider
 
@@ -62,7 +63,12 @@ class _FileStore:
         if not self.path.exists():
             return {}
         try:
-            return json.loads(self.path.read_text())
+            data = json.loads(self.path.read_text())
+            # json.loads is typed `Any`; the on-disk format is a
+            # `{str: str}` dict — reject other shapes defensively.
+            if not isinstance(data, dict):
+                return {}
+            return {str(k): str(v) for k, v in data.items()}
         except (json.JSONDecodeError, OSError) as e:
             logger.warning(f"Could not read fallback credentials file: {e}")
             return {}

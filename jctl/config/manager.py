@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel
 
 from jctl.config.schemas import Config, DefaultsConfig, JenkinsConfig, ProfileConfig
@@ -90,14 +90,14 @@ class ConfigManager:
         config = self.get()
         parts = key.split(".")
 
+        value: Any
         if parts[0] in config.profiles:
-            profile = config.profiles[parts[0]]
-            value = profile
+            value = config.profiles[parts[0]]
             for part in parts[1:]:
                 value = getattr(value, part)
             return value
 
-        value: Any = config
+        value = config
         for part in parts:
             if isinstance(value, dict):
                 value = value[part]
@@ -123,11 +123,12 @@ class ConfigManager:
         config = self.get()
         parts = key.split(".")
 
+        obj: Any
         if parts[0] == "profiles" or parts[0] in config.profiles:
             if parts[0] != "profiles":
                 parts.insert(0, "profiles")
 
-            obj: Any = config
+            obj = config
             for part in parts[:-1]:
                 if isinstance(obj, dict):
                     obj = obj[part]
@@ -137,7 +138,7 @@ class ConfigManager:
             last_key = parts[-1]
             _assign_validated(obj, last_key, value)
         else:
-            obj: Any = config
+            obj = config
             for part in parts[:-1]:
                 if isinstance(obj, dict):
                     obj = obj[part]
@@ -155,7 +156,9 @@ class ConfigManager:
     def create_default_config(self) -> Config:
         """Create a default configuration."""
         default_profile = ProfileConfig(
-            jenkins=JenkinsConfig(url="https://jenkins.example.com"),
+            # JenkinsConfig.url is HttpUrl; Pydantic coerces from str at
+            # runtime, but mypy doesn't follow Pydantic's coercion.
+            jenkins=JenkinsConfig(url="https://jenkins.example.com"),  # type: ignore[arg-type]
         )
 
         config = Config(
@@ -184,7 +187,7 @@ class ConfigManager:
         jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.example.com")
 
         profile = ProfileConfig(
-            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=True),
+            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=True),  # type: ignore[arg-type]
         )
 
         config = Config(
@@ -255,7 +258,7 @@ class ConfigManager:
         jenkins_url = Prompt.ask("Jenkins URL", default="https://jenkins.example.com")
 
         profile = ProfileConfig(
-            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=True),
+            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=True),  # type: ignore[arg-type]
         )
 
         config.profiles[profile_name] = profile

@@ -39,7 +39,7 @@ def _password_prompt_termios(prompt: str, mask: str) -> str:
     sys.stdout.write(prompt)
     sys.stdout.flush()
 
-    password = []
+    password: list[str] = []
 
     # Save terminal settings
     fd = sys.stdin.fileno()
