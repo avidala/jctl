@@ -68,8 +68,10 @@ Changelog = "https://github.com/avidala/jctl/blob/main/CHANGELOG.md"
 where = ["."]
 include = ["jctl*"]
 
-[tool.setuptools.package-data]
-"*" = ["scripts/jctl-completion.zsh", "scripts/setup-completion.py"]
+# Completion is now generated on demand by `jctl completion --install`
+# (which uses Click's built-in completion API), so we no longer ship any
+# scripts/ files — and the previous package-data glob never worked anyway
+# because `scripts/` lives outside the `jctl/` package.
 
 [tool.black]
 line-length = 100
