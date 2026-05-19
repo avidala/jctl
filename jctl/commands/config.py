@@ -223,7 +223,9 @@ def add_profile(
                 sys.exit(0)
 
         new_profile = ProfileConfig(
-            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=verify_ssl),
+            # JenkinsConfig.url is HttpUrl; Pydantic validates+coerces from
+            # str at runtime, but the type annotation is strict.
+            jenkins=JenkinsConfig(url=jenkins_url, verify_ssl=verify_ssl),  # type: ignore[arg-type]
         )
 
         config.profiles[profile_name] = new_profile
