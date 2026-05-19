@@ -2,9 +2,11 @@
 
 import asyncio
 import re
+import socket
 from typing import Any
 
 import httpx
+import requests
 from jenkins import Jenkins as JenkinsBase
 from tenacity import (
     retry,
@@ -16,6 +18,23 @@ from tenacity import (
 from jctl.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+# Shared retry decorator for the synchronous python-jenkins entry points
+# (trigger_job / get_job_info / list_jobs). Same backoff schedule as the
+# async `_do_request`, but driven off `requests` / `socket` exceptions
+# because python-jenkins uses `requests` under the hood. We deliberately
+# don't retry on `jenkins.JenkinsException` (auth, 404, etc.) — those are
+# terminal and retrying just adds latency before the user sees the error.
+_sync_retry = retry(
+    retry=retry_if_exception_type((requests.exceptions.RequestException, socket.timeout)),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    reraise=True,
+    before_sleep=lambda retry_state: logger.debug(
+        f"Retrying sync request (attempt {retry_state.attempt_number}) "
+        f"after error: {retry_state.outcome.exception()}"
+    ),
+)
 
 
 class JenkinsAPIError(Exception):
@@ -229,7 +248,13 @@ class JenkinsClient:
             raise  # Let tenacity handle the retry
 
     # Job operations
+    #
+    # The trigger/info/list paths still go through python-jenkins (sync) so
+    # they don't benefit from the tenacity decorator on `_do_request`. Wrap
+    # them in `_sync_retry` so a transient network blip during e.g.
+    # `pipeline run` doesn't fail out without retries.
 
+    @_sync_retry
     def get_job_info(self, name: str) -> dict[str, Any]:
         """Get job information.
 
@@ -241,6 +266,7 @@ class JenkinsClient:
         """
         return self._jenkins.get_job_info(name)
 
+    @_sync_retry
     def trigger_job(self, name: str, parameters: dict[str, Any] | None = None) -> int:
         """Trigger a job.
 
@@ -545,6 +571,7 @@ class JenkinsClient:
         await self._request("POST", path)
         logger.info(f"Cancelled queue item {item_id}")
 
+    @_sync_retry
     def list_jobs(self) -> list[dict[str, Any]]:
         """List all jobs.
 
