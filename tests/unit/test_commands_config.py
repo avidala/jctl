@@ -148,7 +148,10 @@ def test_show_table_mode_dumps_yaml_body(cfg_home):
     result = _runner().invoke(cli, ["config", "show"])
     assert result.exit_code == 0
     assert "Configuration file:" in result.output
-    assert "jenkins.example.com" in result.output
+    # Match the full URL so CodeQL doesn't flag this as
+    # py/incomplete-url-substring-sanitization (we're not sanitizing a URL,
+    # we're verifying the YAML contents echo the seed config).
+    assert "https://jenkins.example.com" in result.output
 
 
 def test_show_json_is_parsable(cfg_home):
@@ -179,7 +182,8 @@ def test_add_profile_minimal(cfg_home):
 
     # Read back via `config get` to confirm it actually persisted.
     follow_up = _runner().invoke(cli, ["config", "get", "staging.jenkins.url"])
-    assert "staging.example.com" in follow_up.output
+    # Match the full URL — see comment in test_show_table_mode_dumps_yaml_body.
+    assert "https://staging.example.com" in follow_up.output
 
 
 def test_add_profile_with_set_default(cfg_home):
