@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from jctl.config.manager import ConfigManager
 from jctl.config.schemas import Config
@@ -201,3 +202,86 @@ class TestConfigManager:
         assert (
             str(config.profiles["production"].jenkins.url).rstrip("/") == "https://jenkins.new.com"
         )
+
+    def test_set_value_coerces_string_to_int(self, temp_config_dir):
+        """set_value('defaults.timeout', '60') should store the int 60."""
+        manager = ConfigManager(config_dir=temp_config_dir)
+        manager.ensure_config_dir()
+
+        from jctl.config.schemas import JenkinsConfig, ProfileConfig
+
+        manager.save(
+            Config(
+                default_profile="p",
+                profiles={
+                    "p": ProfileConfig(jenkins=JenkinsConfig(url="https://j.example.com")),
+                },
+            )
+        )
+
+        manager.set_value("defaults.timeout", "60")
+        assert manager.get_value("defaults.timeout") == 60
+
+    def test_set_value_rejects_bad_type(self, temp_config_dir):
+        """set_value with non-coercible string must raise, not corrupt the file."""
+        manager = ConfigManager(config_dir=temp_config_dir)
+        manager.ensure_config_dir()
+
+        from jctl.config.schemas import JenkinsConfig, ProfileConfig
+
+        manager.save(
+            Config(
+                default_profile="p",
+                profiles={
+                    "p": ProfileConfig(jenkins=JenkinsConfig(url="https://j.example.com")),
+                },
+            )
+        )
+
+        with pytest.raises(ValidationError):
+            manager.set_value("defaults.timeout", "notanumber")
+
+        # Reloading must still produce a valid config — file was not corrupted.
+        fresh = ConfigManager(config_dir=temp_config_dir)
+        loaded = fresh.load()
+        assert loaded.defaults.timeout == 30
+
+    def test_set_value_rejects_unknown_root_key(self, temp_config_dir):
+        """set_value must refuse unknown top-level fields (no silent extras)."""
+        manager = ConfigManager(config_dir=temp_config_dir)
+        manager.ensure_config_dir()
+
+        from jctl.config.schemas import JenkinsConfig, ProfileConfig
+
+        manager.save(
+            Config(
+                default_profile="p",
+                profiles={
+                    "p": ProfileConfig(jenkins=JenkinsConfig(url="https://j.example.com")),
+                },
+            )
+        )
+
+        with pytest.raises(KeyError):
+            manager.set_value("bogus", "value")
+
+    def test_set_value_coerces_string_to_bool(self, temp_config_dir):
+        """set_value('p.jenkins.verify_ssl', 'false') should store False (bool)."""
+        manager = ConfigManager(config_dir=temp_config_dir)
+        manager.ensure_config_dir()
+
+        from jctl.config.schemas import JenkinsConfig, ProfileConfig
+
+        manager.save(
+            Config(
+                default_profile="p",
+                profiles={
+                    "p": ProfileConfig(jenkins=JenkinsConfig(url="https://j.example.com")),
+                },
+            )
+        )
+
+        manager.set_value("p.jenkins.verify_ssl", "false")
+        v = manager.get_value("p.jenkins.verify_ssl")
+        assert v is False
+        assert isinstance(v, bool)

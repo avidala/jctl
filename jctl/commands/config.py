@@ -3,6 +3,7 @@
 import sys
 
 import click
+from pydantic import ValidationError
 from rich.console import Console
 
 from jctl.config.manager import ConfigManager
@@ -10,6 +11,19 @@ from jctl.constants import EXIT_CONFIG_ERROR
 from jctl.utils.output import OutputFormatter
 
 console = Console()
+
+
+def _format_validation_error(key: str, exc: ValidationError) -> str:
+    """Render a Pydantic ValidationError as a single readable line."""
+    errors = exc.errors()
+    if not errors:
+        return f"Invalid value for '{key}'"
+    err = errors[0]
+    msg = err.get("msg", "invalid value")
+    expected = err.get("type", "")
+    if expected:
+        return f"Invalid value for '{key}': {msg} (expected {expected})"
+    return f"Invalid value for '{key}': {msg}"
 
 
 @click.group()
@@ -62,10 +76,22 @@ def set(ctx: click.Context, key: str, value: str) -> None:  # noqa: A001
 
     try:
         manager.set_value(key, value)
-        console.print(f"[green]✓[/green] Set {key} = {value}")
+        # Read back the stored value so the user sees the coerced type
+        # (e.g. "60" → 60, "false" → False).
+        try:
+            stored = manager.get_value(key)
+        except Exception:
+            stored = value
+        console.print(f"[green]✓[/green] Set {key} = {stored}")
     except FileNotFoundError:
         console.print("[red]Error:[/red] Configuration not found")
         console.print("Run 'jctl config init' first")
+        sys.exit(EXIT_CONFIG_ERROR)
+    except ValidationError as e:
+        console.print(f"[red]Error:[/red] {_format_validation_error(key, e)}")
+        sys.exit(EXIT_CONFIG_ERROR)
+    except (AttributeError, KeyError):
+        console.print(f"[red]Error:[/red] Unknown configuration key: {key}")
         sys.exit(EXIT_CONFIG_ERROR)
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
