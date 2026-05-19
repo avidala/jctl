@@ -53,39 +53,31 @@ def list(
 
     jobs = asyncio.run(fetch_jobs())
 
-    # Convert Jenkins jobs to pipeline format
+    # Convert Jenkins jobs to pipeline format. We attach `_ts` (the
+    # lastBuild epoch ms) on each row solely as a sort key — stripped
+    # before rendering so it doesn't show up in tables/JSON.
+    import datetime
+
     pipelines = []
     for job in jobs:
-        # Get full name (includes folder path)
         job_full_name = job.get("fullName", job["name"])
 
-        # Apply filter early if specified
         if filter and filter.lower() not in job_full_name.lower():
             continue
 
-        # Get last build info if available
         last_build = job.get("lastBuild")
         if last_build:
             build_number = last_build.get("number", 0)
-            # Map Jenkins result to status
             result = last_build.get("result", "RUNNING")
-            if result is None:
-                job_status = "RUNNING"
-            else:
-                job_status = result
+            job_status = "RUNNING" if result is None else result
 
-            # Apply status filter
             if status and job_status != status:
                 continue
 
-            # Calculate duration
             duration = last_build.get("duration", 0)
             duration_str = format_duration(duration) if duration > 0 else "Running"
 
-            # Get timestamp
             timestamp = last_build.get("timestamp", 0)
-            import datetime
-
             last_run = (
                 datetime.datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M")
                 if timestamp
@@ -99,11 +91,12 @@ def list(
                     "last_run": last_run,
                     "duration": duration_str,
                     "build_number": build_number,
+                    "_ts": int(timestamp or 0),
                 }
             )
         else:
-            # No builds yet
-            if not status:  # Only show if no status filter
+            # No builds yet — only show when not filtering by status.
+            if not status:
                 pipelines.append(
                     {
                         "name": job_full_name,
@@ -111,11 +104,20 @@ def list(
                         "last_run": "Never",
                         "duration": "-",
                         "build_number": 0,
+                        "_ts": 0,
                     }
                 )
 
-    # Apply limit
+    # Sort: most recently built first; NO_BUILDS rows (ts==0) fall to the
+    # bottom. Tie-break alphabetically so the order is stable across runs.
+    pipelines.sort(key=lambda p: (-p["_ts"], p["name"]))
+
+    # Apply limit after sorting so the user gets the freshest N rows.
     pipelines = pipelines[:limit]
+
+    # Strip the internal sort key from each row before rendering.
+    for p in pipelines:
+        p.pop("_ts", None)
 
     if output_format == "table":
         console.print(f"[cyan]Found {len(pipelines)} pipeline(s)[/cyan]\n")
