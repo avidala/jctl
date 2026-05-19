@@ -8,6 +8,7 @@ from rich.console import Console
 
 from jctl.constants import (
     EXIT_JENKINS_API_ERROR,
+    EXIT_USER_CANCELLED,
 )
 from jctl.utils.completion import complete_job_name
 from jctl.utils.jenkins_client_factory import get_jenkins_client
@@ -571,11 +572,20 @@ def run(
 @click.argument("job_name", shell_complete=complete_job_name)
 @click.argument("build_number", type=int)
 @click.option("--reason", help="Reason for cancellation (for audit logs)")
-@click.confirmation_option(prompt="Are you sure you want to cancel this pipeline?")
+@click.option("--yes", "-y", is_flag=True, help="Skip the confirmation prompt.")
 @click.pass_context
-def cancel(ctx: click.Context, job_name: str, build_number: int, reason: str | None) -> None:
+def cancel(
+    ctx: click.Context, job_name: str, build_number: int, reason: str | None, yes: bool
+) -> None:
     """Cancel/abort a running pipeline."""
-    # Get authenticated client
+    # The previous implementation used @click.confirmation_option, which on
+    # "no" exits 1 via Click's generic Abort. That mixed user-cancellation
+    # with real errors in callers' exit-code parsing. Map an explicit "no"
+    # to EXIT_USER_CANCELLED (130) — the conventional Ctrl+C signal code.
+    if not yes and not click.confirm(f"Cancel pipeline {job_name} #{build_number}?", default=False):
+        console.print("[yellow]Cancellation aborted by user[/yellow]")
+        sys.exit(EXIT_USER_CANCELLED)
+
     client = get_jenkins_client(ctx)
 
     console.print(f"[cyan]Cancelling:[/cyan] {job_name} #{build_number}")
