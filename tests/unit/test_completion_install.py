@@ -8,9 +8,22 @@ replaced it with a confirmation-gated, Click-native eval snippet.
 
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from jctl.cli import cli
+
+
+@pytest.fixture
+def fake_home(tmp_path, monkeypatch):
+    """Make `Path.home()` resolve to a tmp dir on every OS.
+
+    Setting `$HOME` alone works on POSIX but not Windows, where
+    `pathlib.Path.home()` reads `USERPROFILE`. Patching the function
+    directly avoids that whole class of cross-platform foot-gun.
+    """
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    return tmp_path
 
 
 def _rc_for(home: Path, shell: str) -> Path:
@@ -21,8 +34,7 @@ def _rc_for(home: Path, shell: str) -> Path:
     raise AssertionError(f"unsupported in test helper: {shell}")
 
 
-def test_dry_run_does_not_touch_file(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+def test_dry_run_does_not_touch_file(fake_home, monkeypatch):
     monkeypatch.setenv("SHELL", "/bin/zsh")
     runner = CliRunner()
 
@@ -30,13 +42,12 @@ def test_dry_run_does_not_touch_file(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert "Would append to" in result.output
     # No rc file created on dry-run.
-    assert not _rc_for(tmp_path, "zsh").exists()
+    assert not _rc_for(fake_home, "zsh").exists()
 
 
-def test_prompt_declined_makes_no_changes(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+def test_prompt_declined_makes_no_changes(fake_home, monkeypatch):
     monkeypatch.setenv("SHELL", "/bin/zsh")
-    rc = _rc_for(tmp_path, "zsh")
+    rc = _rc_for(fake_home, "zsh")
     rc.write_text("# pre-existing line\n")
     runner = CliRunner()
 
@@ -48,15 +59,14 @@ def test_prompt_declined_makes_no_changes(tmp_path, monkeypatch):
     assert rc.read_text() == "# pre-existing line\n"
 
 
-def test_yes_flag_bypasses_prompt(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+def test_yes_flag_bypasses_prompt(fake_home, monkeypatch):
     monkeypatch.setenv("SHELL", "/bin/zsh")
     runner = CliRunner()
 
     result = runner.invoke(cli, ["completion", "--install", "--yes"])
     assert result.exit_code == 0, result.output
 
-    rc = _rc_for(tmp_path, "zsh")
+    rc = _rc_for(fake_home, "zsh")
     assert rc.exists()
     content = rc.read_text()
     assert "_JCTL_COMPLETE=zsh_source jctl" in content
@@ -65,15 +75,14 @@ def test_yes_flag_bypasses_prompt(tmp_path, monkeypatch):
     assert "/Users/" not in content
 
 
-def test_idempotent_install(tmp_path, monkeypatch):
+def test_idempotent_install(fake_home, monkeypatch):
     """A second --install on an already-installed rc must be a no-op,
     not duplicate the snippet."""
-    monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("SHELL", "/bin/zsh")
     runner = CliRunner()
 
     runner.invoke(cli, ["completion", "--install", "--yes"])
-    rc = _rc_for(tmp_path, "zsh")
+    rc = _rc_for(fake_home, "zsh")
     first_content = rc.read_text()
 
     result = runner.invoke(cli, ["completion", "--install", "--yes"])
@@ -82,24 +91,22 @@ def test_idempotent_install(tmp_path, monkeypatch):
     assert rc.read_text() == first_content
 
 
-def test_install_explicit_bash_shell(tmp_path, monkeypatch):
+def test_install_explicit_bash_shell(fake_home, monkeypatch):
     """Passing `bash` explicitly overrides `$SHELL` auto-detection."""
-    monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("SHELL", "/bin/zsh")
-    (tmp_path / ".bashrc").touch()
+    (fake_home / ".bashrc").touch()
     runner = CliRunner()
 
     result = runner.invoke(cli, ["completion", "bash", "--install", "--yes"])
     assert result.exit_code == 0, result.output
 
-    bashrc = tmp_path / ".bashrc"
+    bashrc = fake_home / ".bashrc"
     assert "_JCTL_COMPLETE=bash_source jctl" in bashrc.read_text()
     # The zshrc must not have been touched.
-    assert not (tmp_path / ".zshrc").exists()
+    assert not (fake_home / ".zshrc").exists()
 
 
-def test_install_errors_when_shell_unknown(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
+def test_install_errors_when_shell_unknown(fake_home, monkeypatch):
     monkeypatch.delenv("SHELL", raising=False)
     runner = CliRunner()
 
