@@ -54,7 +54,7 @@ def trigger(
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
-    async def trigger_job():
+    async def trigger_job() -> None:
         try:
             with console.status("[cyan]Triggering job...[/cyan]"):
                 queue_item_id = client.trigger_job(job_name, params if params else None)
@@ -158,7 +158,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
-    async def get_logs():
+    async def get_logs() -> int:
         try:
             # If no build number, get the latest build
             if build_number is None:
@@ -181,7 +181,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
                         sys.exit(EXIT_JENKINS_API_ERROR)
 
                     console.print(f"[dim]Using latest build #{latest_build_number}[/dim]\n")
-                    return latest_build_number
+                    return int(latest_build_number)
 
             return build_number
 
@@ -189,12 +189,12 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             console.print(f"[red]Error getting build info:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
 
-    async def stream_logs(build_num: int):
+    async def stream_logs(build_num: int) -> None:
         """Stream logs in real-time."""
         console.print(f"[cyan]Streaming logs for:[/cyan] {job_name} #{build_num}\n")
         console.print("[dim]Press Ctrl+C to stop streaming[/dim]\n")
 
-        def print_line(line: str):
+        def print_line(line: str) -> None:
             console.print(line, highlight=False)
 
         try:
@@ -206,7 +206,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             console.print(f"\n[red]Error streaming logs:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
 
-    async def fetch_logs(build_num: int):
+    async def fetch_logs(build_num: int) -> None:
         """Fetch complete logs."""
         try:
             with console.status(f"[cyan]Fetching logs for {job_name} #{build_num}...[/cyan]"):
