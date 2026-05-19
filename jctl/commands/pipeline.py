@@ -1,5 +1,7 @@
 """Pipeline management commands."""
 
+from __future__ import annotations
+
 import asyncio
 import sys
 
@@ -24,26 +26,36 @@ def pipeline() -> None:
     pass
 
 
-@pipeline.command()
+@pipeline.command("list")
 @click.option("--filter", "-f", help="Filter pipelines by pattern")
 @click.option("--folder", help="Filter by folder (e.g., 'deploy' or 'deploy/staging')")
-@click.option("--status", type=click.Choice(["SUCCESS", "FAILED", "RUNNING", "ABORTED"]))
+@click.option(
+    "--status",
+    type=click.Choice(["SUCCESS", "FAILED", "FAILURE", "RUNNING", "ABORTED"]),
+    help="Filter by last build status. FAILED is accepted as an alias for FAILURE.",
+)
 @click.option("--limit", "-n", type=int, default=50, help="Number of pipelines to show")
 @click.pass_context
-def list(
+def list_pipelines(
     ctx: click.Context, filter: str | None, folder: str | None, status: str | None, limit: int
-) -> None:  # noqa: A001
+) -> None:
     """List available pipelines."""
     from jctl.utils.output import OutputFormatter, format_duration
 
     output_format = ctx.obj.get("output", "table")
     formatter = OutputFormatter(console)
 
+    # Jenkins reports a build's `result` as FAILURE; the original
+    # `--status FAILED` choice never matched anything because the
+    # comparison was literal. Accept either name from the user.
+    if status == "FAILED":
+        status = "FAILURE"
+
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
     # Fetch jobs from Jenkins
-    async def fetch_jobs():
+    async def fetch_jobs() -> list[dict]:
         try:
             with console.status("[cyan]Fetching pipelines from Jenkins...[/cyan]"):
                 jobs = await client.get_jobs(folder=folder)
@@ -149,7 +161,7 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
     client = get_jenkins_client(ctx)
 
     # Fetch build info
-    async def fetch_build_info():
+    async def fetch_build_info() -> tuple[dict, dict | None]:
         try:
             with console.status(
                 f"[cyan]Fetching build info for {job_name} #{build_number}...[/cyan]"
@@ -172,7 +184,7 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
 
     # Machine-readable formats: emit structured data and return.
     if output_format in ("json", "yaml", "plain"):
-        result: dict = {
+        payload: dict = {
             "job": job_name,
             "build_number": build_number,
             "result": build_info.get("result"),
@@ -181,7 +193,7 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
             "url": build_info.get("url"),
         }
         if workflow_info and "stages" in workflow_info:
-            result["stages"] = [
+            payload["stages"] = [
                 {
                     "name": s.get("name"),
                     "status": s.get("status"),
@@ -189,7 +201,7 @@ def describe(ctx: click.Context, job_name: str, build_number: int) -> None:
                 }
                 for s in workflow_info["stages"]
             ]
-        OutputFormatter(console).format(result, output_format)
+        OutputFormatter(console).format(payload, output_format)
         return
 
     console.print(f"\n[bold cyan]{job_name}[/bold cyan] [dim]#{build_number}[/dim]\n")
@@ -276,7 +288,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
-    async def get_logs():
+    async def get_logs() -> int:
         try:
             # If no build number, get the latest build
             if build_number is None:
@@ -299,7 +311,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
                         sys.exit(EXIT_JENKINS_API_ERROR)
 
                     console.print(f"[dim]Using latest build #{latest_build_number}[/dim]\n")
-                    return latest_build_number
+                    return int(latest_build_number)
 
             return build_number
 
@@ -307,12 +319,12 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             console.print(f"[red]Error getting build info:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
 
-    async def stream_logs(build_num: int):
+    async def stream_logs(build_num: int) -> None:
         """Stream logs in real-time."""
         console.print(f"[cyan]Streaming logs for:[/cyan] {job_name} #{build_num}\n")
         console.print("[dim]Press Ctrl+C to stop streaming[/dim]\n")
 
-        def print_line(line: str):
+        def print_line(line: str) -> None:
             console.print(line, highlight=False)
 
         try:
@@ -324,7 +336,7 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             console.print(f"\n[red]Error streaming logs:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
 
-    async def fetch_logs(build_num: int):
+    async def fetch_logs(build_num: int) -> None:
         """Fetch complete logs."""
         try:
             with console.status(f"[cyan]Fetching logs for {job_name} #{build_num}...[/cyan]"):
@@ -387,7 +399,7 @@ def run(
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
-    async def run_pipeline():
+    async def run_pipeline() -> None:
         try:
             with console.status("[cyan]Triggering pipeline...[/cyan]"):
                 queue_item_id = client.trigger_job(job_name, params if params else None)
@@ -594,7 +606,7 @@ def cancel(
         console.print(f"[dim]Reason: {reason}[/dim]")
 
     # Stop the build
-    async def stop_build():
+    async def stop_build() -> None:
         try:
             with console.status("[yellow]Stopping pipeline...[/yellow]"):
                 await client.stop_build(job_name, build_number)
