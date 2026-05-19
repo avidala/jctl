@@ -184,14 +184,16 @@ tests/
 ```
 
 ### Coverage Goals
-- Current coverage is ~14% (auth + config + jenkins client only). The
-  long-term target is 80% — see the "Test Suite" item in `ROADMAP.md`.
+- Current line coverage is ~37% overall (run `pytest --cov=jctl` to
+  reproduce). The long-term target is 80% — see `ROADMAP.md`.
+- Strongest areas: `config/schemas.py` 100%, `auth/keystore.py` ~83%,
+  `utils/completion.py` ~66%. Weakest: `commands/*` (17-28% — the
+  command layer is still mostly untested).
 - New code in `jctl/commands/`, `jctl/utils/`, or `jctl/cli.py` should
   ship with unit tests so we stop the bleeding even while back-fill is
   pending.
-- Security-critical paths (API token auth, keystore) must be tested
-  thoroughly — they are the only paths currently above the project
-  average.
+- Security-critical paths (API token auth, keystore) are well covered;
+  hold the line there before expanding elsewhere.
 
 ### Running Tests
 - Use pytest with `-v` for verbose output

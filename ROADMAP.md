@@ -1,65 +1,40 @@
 # jctl Roadmap
 
-**Current Version**: v0.1.0-beta.1
-**Last Updated**: 2025-01-20
+**Current Version**: v0.2.2
+**Last Updated**: 2026-05-19
 
 ## Version Overview
 
-| Version | Status | Target | Focus |
-|---------|--------|--------|-------|
-| v0.1.0-beta.1 | ✅ Complete | 2025-01-20 | Beta release with core features |
-| v0.2.0 | 📋 Planned | Q1 2025 | Restore removed commands, improve UX |
-| v0.3.0 | 📋 Planned | Q2 2025 | Advanced features, PyPI package |
-| v1.0.0 | 🎯 Goal | Q2-Q3 2025 | Production-ready, full feature set |
+| Version | Status     | Released   | Focus |
+|---------|------------|------------|-------|
+| v0.1.0-beta.1 | ✅ Released | 2025-01-20 | Initial beta with core commands. |
+| v0.2.x        | ✅ Released | 2026-05-13 | OAuth/Okta removed (API-token-only auth); CI hardening; release-please. |
+| v0.3.0        | 📋 Planned  | TBD        | Restore removed `job`/`pipeline` commands; deeper test coverage; PyPI publication under a non-colliding name. |
+| v1.0.0        | 🎯 Goal     | TBD        | Production-ready, full feature set. |
 
 ---
 
-## v0.1.0-beta.1 (Current - Released 2025-01-20)
+## v0.2.x — shipped
 
-**Status**: ✅ Complete
+Released on `main` between 2026-05-13 and 2026-05-19. Notable changes from v0.1.0-beta.1:
 
-### Delivered Features
-
-**Authentication**:
-- ✅ Jenkins API token authentication
-- ✅ OS-native keystore integration
-- ✅ Secure credential storage
-- ✅ `token`, `status`, `logout` commands
-
-**Job Management** (2 commands):
-- ✅ Trigger jobs with parameters
-- ✅ View/stream logs
-
-**Pipeline Management** (5 commands):
-- ✅ List pipelines
-- ✅ Run pipelines with parameters
-- ✅ Describe pipeline with stages
-- ✅ View/stream pipeline logs
-- ✅ Cancel running pipelines
-
-**Configuration** (6 commands):
-- ✅ Interactive setup
-- ✅ Multiple profiles support
-- ✅ Profile management
-- ✅ Config get/set/list/show
-
-**Infrastructure**:
-- ✅ Async operations with httpx
-- ✅ Retry logic with exponential backoff
-- ✅ Shell completion with caching
-- ✅ Distinct exit codes
-- ✅ Comprehensive documentation
-- ✅ Test suite (50%+ coverage)
-- ✅ Code quality: 94/100
-
-**Total**: 18 working commands
+- **OAuth/Okta removed** (#32, breaking) — only `jctl auth token` (Jenkins API token) is supported. The `OktaConfig` block and `JCTL_OKTA_*` env vars are gone; existing configs with an `okta:` section still load.
+- **Configuration**: `config set` now validates types via Pydantic and refuses unknown keys (was silently corrupting the YAML); `save()` uses `exclude_unset` so it doesn't bloat the file with schema defaults.
+- **Output**: `--output json|yaml|plain` now respected by `pipeline describe`, `pipeline logs`, `job logs`, `config show`, and `auth status --output plain`. `format_plain` flattens nested dicts/lists to dot/index notation. Auth banner + "Found N pipeline(s)" header go to stderr for non-table output.
+- **Jenkins client**: `follow_redirects=True` (fixes `cancel` on 302-on-success); HTML stripped from 4xx error messages; useful network-error messages (`ConnectTimeout: could not reach …`); recursive folder traversal to 5 levels (fixes filtering/logging on jobs nested ≥ 3 folders deep).
+- **Keystore**: real file-based encrypted fallback at `~/.jctl/credentials.enc` when the OS keystore is unusable (locked Keychain, headless CI). Was a no-op fallback before.
+- **CLI**: `JCTL_PROFILE`, `JCTL_OUTPUT_FORMAT`, `JCTL_LOG_LEVEL`, `JCTL_JENKINS_URL`, `JCTL_NO_COLOR` env vars are now actually wired (were documented but dead code).
+- **`pipeline list`**: sorted by recency descending; `NO_BUILDS` rows pushed to the bottom.
+- **Completion**: cache persists at `~/.jctl/cache/jobs.json` (was in-memory and died between Tab presses); substring match instead of `startswith` so `hamc<Tab>` matches `…/hamc-upgrade-environment`.
+- **`completion --install`**: confirmation prompt before modifying the rc file; uses Click's built-in completion API instead of a hard-coded `scripts/jctl-completion.zsh` path (the latter was broken on Homebrew/pipx/wheel installs).
+- **Tests**: ~67 unit tests, ~37% coverage. The 23-tests-skipped baseline from v0.1 is down to 11, with new dedicated suites for keystore fallback, output formatting, completion cache, Jenkins client error handling, sync retry, cancel exit code, env-var wiring, list sort, and pipeline-list output formats.
 
 ---
 
-## v0.2.0 (Planned - Q1 2025)
+## v0.3.0 — planned
 
-**Target Date**: February-March 2025
-**Focus**: Restore removed commands, improve user experience
+**Target**: TBD
+**Focus**: Restore commands removed during the v0.1 → v0.2 split, plus a real test-coverage push.
 
 ### Restored Commands (10 total)
 

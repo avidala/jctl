@@ -334,7 +334,10 @@ def mock_jenkins_client(mocker):
 
 ### Test Coverage Goals
 
-- **Unit Tests**: 80%+ coverage
+- **Unit Tests**: long-term target is 80%+ — current line coverage is
+  ~37% overall (run `pytest --cov=jctl` to reproduce). Strongest areas
+  are `config/schemas.py` (100%), `auth/keystore.py` (~83%), and
+  `utils/completion.py` (~66%); the weakest is `commands/*` (17-28%).
 - **Integration Tests**: Key workflows
 - **Edge Cases**: Error conditions
 - **Security**: Authentication flows
