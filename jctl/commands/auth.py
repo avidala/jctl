@@ -67,7 +67,9 @@ def status(ctx: click.Context) -> None:
     table.add_column("Value")
 
     table.add_row("Status", "[green]✓ Configured[/green]")
-    table.add_row("Username", api_auth_info["username"] or "Unknown")
+    # `username` is typed `bool | str | None` from get_auth_info(); cast to
+    # str so mypy doesn't complain about the `Literal[True] | str` from `or`.
+    table.add_row("Username", str(api_auth_info["username"] or "Unknown"))
     table.add_row("Has Token", "✓" if api_auth_info["has_token"] else "✗")
 
     console.print(table)
