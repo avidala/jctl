@@ -7,7 +7,7 @@ import json
 import yaml
 from rich.console import Console
 
-from jctl.utils.output import OutputFormatter
+from jctl.utils.output import OutputFormatter, format_duration
 
 
 def _format(data, fmt: str) -> str:
@@ -52,3 +52,31 @@ class TestFormatJsonYaml:
     def test_yaml_is_parsable(self):
         out = _format({"a": 1, "nested": {"b": 2}}, "yaml")
         assert yaml.safe_load(out)["nested"]["b"] == 2
+
+
+class TestFormatDuration:
+    def test_negative_is_n_a(self):
+        assert format_duration(-1) == "N/A"
+
+    def test_sub_second_shows_milliseconds(self):
+        # Was the bug: 228ms floored to "0s". Pipeline stages routinely
+        # execute in <1s — those rows looked like no-ops.
+        assert format_duration(228) == "228ms"
+        assert format_duration(0) == "0ms"
+        assert format_duration(999) == "999ms"
+
+    def test_one_second_boundary(self):
+        assert format_duration(1000) == "1s"
+        assert format_duration(1500) == "1s"  # truncates within seconds
+
+    def test_minutes_and_seconds(self):
+        assert format_duration(90_000) == "1m 30s"
+        assert format_duration(60_000) == "1m"
+
+    def test_hours_and_minutes(self):
+        assert format_duration(3_660_000) == "1h 1m"
+        assert format_duration(3_600_000) == "1h"
+
+    def test_days_and_hours(self):
+        # 25h = 1d 1h
+        assert format_duration(25 * 3_600_000) == "1d 1h"
