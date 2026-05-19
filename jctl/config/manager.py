@@ -5,8 +5,16 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import BaseModel
 
 from jctl.config.schemas import Config, DefaultsConfig, JenkinsConfig, ProfileConfig
+
+
+def _assign_validated(model: BaseModel, field: str, value: Any) -> None:
+    """Assign `value` to `model.field`, rejecting unknown fields."""
+    if field not in type(model).model_fields:
+        raise KeyError(field)
+    setattr(model, field, value)
 
 
 class ConfigManager:
@@ -45,7 +53,10 @@ class ConfigManager:
         """Save configuration to file."""
         self.ensure_config_dir()
 
-        data = config.model_dump(mode="json", exclude_none=True)
+        # exclude_unset=True keeps the YAML file lean: only fields the user
+        # actually set are persisted. Schema defaults stay implicit and will
+        # be re-applied next load.
+        data = config.model_dump(mode="json", exclude_none=True, exclude_unset=True)
 
         with open(self.config_file, "w") as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False)
@@ -101,6 +112,13 @@ class ConfigManager:
         Args:
             key: Configuration key (e.g., 'defaults.timeout' or 'production.jenkins.url')
             value: Value to set
+
+        Raises:
+            KeyError: If the key path references a field that does not exist on
+                the schema. (Pydantic models keep `extra='allow'` so future
+                config versions can load forward-compat fields, but interactive
+                `set` should refuse typos rather than silently inventing keys.)
+            ValidationError: If the value cannot be coerced to the field type.
         """
         config = self.get()
         parts = key.split(".")
@@ -117,7 +135,7 @@ class ConfigManager:
                     obj = getattr(obj, part)
 
             last_key = parts[-1]
-            setattr(obj, last_key, value)
+            _assign_validated(obj, last_key, value)
         else:
             obj: Any = config
             for part in parts[:-1]:
@@ -130,7 +148,7 @@ class ConfigManager:
             if isinstance(obj, dict):
                 obj[last_key] = value
             else:
-                setattr(obj, last_key, value)
+                _assign_validated(obj, last_key, value)
 
         self.save(config)
 
