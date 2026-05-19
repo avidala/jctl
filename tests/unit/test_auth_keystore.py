@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from jctl.auth.keystore import SecureKeystore
 
 
@@ -71,21 +69,32 @@ class TestSecureKeystore:
 
         mock_keyring.set_password.assert_called_once_with("jctl", "test_key", "test_value")
 
-    @pytest.mark.skip(reason="Mock expectations don't match implementation - needs update")
     @patch("jctl.auth.keystore.keyring")
-    def test_store_with_encryption_fallback(self, mock_keyring):
-        """Test storing credential with encryption when keystore fails."""
-        mock_keyring.set_password.side_effect = [
-            Exception("Keystore unavailable"),  # First call fails
-            None,  # Second call for encrypted value succeeds
-        ]
-        mock_keyring.get_password.side_effect = [None, "dGVzdC1rZXk="]  # For _get_encryption_key
+    def test_store_falls_back_to_file_when_keystore_unusable(
+        self, mock_keyring, monkeypatch, tmp_path
+    ):
+        """When `keyring.set_password` raises, value must land in the file fallback."""
+        monkeypatch.setenv("JCTL_CONFIG_DIR", str(tmp_path))
+        mock_keyring.set_password.side_effect = Exception("Keystore locked")
+        # Encryption-key retrieval also fails so we exercise machine-derived key path.
+        mock_keyring.get_password.side_effect = Exception("Keystore locked")
 
         keystore = SecureKeystore()
-        keystore.store("test_key", "test_value")
+        keystore.store("jenkins_token", "s3cr3t")
 
-        # Should have called set_password twice (once failed, once for encrypted)
-        assert mock_keyring.set_password.call_count == 3  # encryption key + failed + encrypted
+        # File fallback must have been created with 0600 mode.
+        cred_file = tmp_path / "credentials.enc"
+        assert cred_file.exists()
+        import sys
+
+        if sys.platform != "win32":
+            assert oct(cred_file.stat().st_mode)[-3:] == "600"
+
+        # Round-trip: retrieve must find it via the file fallback too.
+        # The keyring lookup will return None (no real entry); file fallback wins.
+        mock_keyring.get_password.side_effect = Exception("Keystore locked")
+        got = keystore.retrieve("jenkins_token")
+        assert got == "s3cr3t"
 
     @patch("jctl.auth.keystore.keyring")
     def test_retrieve_from_keystore(self, mock_keyring):
@@ -99,26 +108,21 @@ class TestSecureKeystore:
         mock_keyring.get_password.assert_called_once_with("jctl", "test_key")
 
     @patch("jctl.auth.keystore.keyring")
-    def test_retrieve_encrypted(self, mock_keyring):
-        """Test retrieving encrypted credential."""
-        from cryptography.fernet import Fernet
+    def test_retrieve_falls_back_to_file(self, mock_keyring, monkeypatch, tmp_path):
+        """retrieve() should consult the file fallback when keystore has no entry."""
+        monkeypatch.setenv("JCTL_CONFIG_DIR", str(tmp_path))
+        # OS keystore has nothing; file fallback has the credential.
+        mock_keyring.get_password.return_value = None
+        mock_keyring.set_password.side_effect = Exception("Keystore locked")
 
-        # Create a test encryption key and encrypt a value
-        test_key = Fernet.generate_key()
-        cipher = Fernet(test_key)
-        encrypted = cipher.encrypt(b"test_value")
-
-        mock_keyring.get_password.side_effect = [
-            None,  # Regular key doesn't exist
-            encrypted.decode(),  # Encrypted key exists
-            test_key.decode(),  # Encryption key
-        ]
-
+        # Seed the file fallback by going through store() while keystore is
+        # broken — same path the bug-fix exercises in production.
         keystore = SecureKeystore()
-        keystore._encryption_key = test_key  # Set the key directly
-        value = keystore.retrieve("test_key")
+        keystore.store("jenkins_token", "s3cr3t-from-file")
 
-        assert value == "test_value"
+        # New instance to ensure we're not reading from in-memory cache.
+        keystore2 = SecureKeystore()
+        assert keystore2.retrieve("jenkins_token") == "s3cr3t-from-file"
 
     @patch("jctl.auth.keystore.keyring")
     def test_retrieve_not_found(self, mock_keyring):
@@ -132,13 +136,13 @@ class TestSecureKeystore:
 
     @patch("jctl.auth.keystore.keyring")
     def test_delete_success(self, mock_keyring):
-        """Test deleting credential."""
+        """delete() removes the entry from the OS keystore (one call)."""
         mock_keyring.delete_password = MagicMock()
 
         keystore = SecureKeystore()
         keystore.delete("test_key")
 
-        assert mock_keyring.delete_password.call_count == 2  # Regular and encrypted versions
+        mock_keyring.delete_password.assert_called_once_with("jctl", "test_key")
 
     @patch("jctl.auth.keystore.keyring")
     def test_clear_all(self, mock_keyring):
