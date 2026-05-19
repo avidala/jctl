@@ -51,7 +51,7 @@ def status(ctx: click.Context) -> None:
     api_auth = APITokenAuthenticator()
     api_auth_info = api_auth.get_auth_info()
 
-    if output_format == "json" or output_format == "yaml":
+    if output_format in ("json", "yaml", "plain"):
         formatter.format(api_auth_info, output_format)
         return
 

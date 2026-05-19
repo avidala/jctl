@@ -212,6 +212,19 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             with console.status(f"[cyan]Fetching logs for {job_name} #{build_num}...[/cyan]"):
                 log_text = await client.get_build_log(job_name, build_num)
 
+            output_format = ctx.obj.get("output", "table")
+            if output_format in ("json", "yaml"):
+                from jctl.utils.output import OutputFormatter
+
+                OutputFormatter(console).format(
+                    {"job": job_name, "build_number": build_num, "log": log_text},
+                    output_format,
+                )
+                return
+            if output_format == "plain":
+                print(log_text, end="")
+                return
+
             console.print(f"[cyan]Logs for:[/cyan] {job_name} #{build_num}\n")
             console.print(log_text, highlight=False)
 

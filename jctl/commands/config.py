@@ -155,6 +155,7 @@ def list(ctx: click.Context) -> None:  # noqa: A001
 def show(ctx: click.Context) -> None:
     """Show full configuration file."""
     manager = ConfigManager()
+    output_format = ctx.obj.get("output", "table")
 
     try:
         if not manager.config_file.exists():
@@ -162,12 +163,21 @@ def show(ctx: click.Context) -> None:
             console.print("Run 'jctl config init' first")
             sys.exit(EXIT_CONFIG_ERROR)
 
+        # For machine-readable formats, emit only the structured config.
+        if output_format in ("json", "yaml", "plain"):
+            config = manager.get()
+            formatter = OutputFormatter(console)
+            formatter.format(
+                config.model_dump(mode="json", exclude_none=True, exclude_unset=True),
+                output_format,
+            )
+            return
+
+        # Table mode keeps the human-friendly header + raw YAML body.
         console.print(f"[cyan]Configuration file:[/cyan] {manager.config_file}")
         console.print()
-
         with open(manager.config_file) as f:
-            content = f.read()
-            console.print(content)
+            console.print(f.read())
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
