@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Part of the AVIDALA DevOps Tools suite*
 
+## [0.3.0](https://github.com/avidala/jctl/compare/v0.2.2...v0.3.0) (2026-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* removes `jctl auth login`, `jctl auth refresh`, the `OktaConfig` profile section, `JCTL_OKTA_*` env vars, the `--okta-domain` / `--okta-client-id` flags on `jctl config add-profile`, and the `authlib` dependency. Existing configs with an `okta:` block still load (Pydantic `extra = "allow"`) but the field is ignored.
+
+### Features
+
+* remove Okta OAuth/SSO authentication ([#32](https://github.com/avidala/jctl/issues/32)) ([94f3972](https://github.com/avidala/jctl/commit/94f3972a3bf943091a1c85c8c2a664d8e7fc6b85))
+
+
+### Bug Fixes
+
+* **client+cancel:** retry sync calls + map confirm-abort to rc=130 ([#60](https://github.com/avidala/jctl/issues/60)) ([a53735b](https://github.com/avidala/jctl/commit/a53735b9de2c2426e2d6a41694b35ab2a159392b))
+* **client:** follow 302s, strip HTML from errors, useful network msgs ([#51](https://github.com/avidala/jctl/issues/51)) ([e9e65d1](https://github.com/avidala/jctl/commit/e9e65d1a2f040f84a0ec31631c6651c0c1f661fd))
+* **client:** walk folders deeper than 2 levels in get_jobs ([#54](https://github.com/avidala/jctl/issues/54)) ([191e4e1](https://github.com/avidala/jctl/commit/191e4e1b8fb2398bab3d0c34d56dbbe805eec8a3))
+* **cli:** wire JCTL_* env vars that were documented but dead ([#55](https://github.com/avidala/jctl/issues/55)) ([7462085](https://github.com/avidala/jctl/commit/74620852174bbfb48b156b76210f2f214f3ab2f5))
+* **completion:** confirm before modifying rc; drop machine-baked path ([#59](https://github.com/avidala/jctl/issues/59)) ([606f6e9](https://github.com/avidala/jctl/commit/606f6e95b5239ba7356b43c8181eaae8052cefb9))
+* **completion:** persist cache to disk, switch to substring match ([#57](https://github.com/avidala/jctl/issues/57)) ([710d157](https://github.com/avidala/jctl/commit/710d1572d9a3ea2bcc37961b5f3c3725d1b70dd3))
+* **config:** validate set values + reject unknown keys ([#49](https://github.com/avidala/jctl/issues/49)) ([13e2ccd](https://github.com/avidala/jctl/commit/13e2ccdc03af5031fd0fa32adf6acd671f242934))
+* **keystore:** real file-based fallback for headless / broken keychains ([#52](https://github.com/avidala/jctl/issues/52)) ([c66fca9](https://github.com/avidala/jctl/commit/c66fca97cba292cf88826566bff2fe7b0d2634a6))
+* **output:** honor --output for describe/logs/show + clean plain format ([#50](https://github.com/avidala/jctl/issues/50)) ([0f6a17d](https://github.com/avidala/jctl/commit/0f6a17d1cb02ef6b6aee2407b1251c151656c966))
+* **pipeline:** order list by recency, NO_BUILDS last ([#56](https://github.com/avidala/jctl/issues/56)) ([712fe4c](https://github.com/avidala/jctl/commit/712fe4ce984fdb682150f18f124b3bc01203c855))
+* **ux:** show sub-second durations + stop wrapping Status column ([#58](https://github.com/avidala/jctl/issues/58)) ([aac1c73](https://github.com/avidala/jctl/commit/aac1c731526185a24350453cb73dca01c13ef956))
+
+
+### Documentation
+
+* refresh ROADMAP + correct stale coverage claims ([#61](https://github.com/avidala/jctl/issues/61)) ([6e819bf](https://github.com/avidala/jctl/commit/6e819bfb1758933e827c61ef57e83f1550be9488))
+
 ## [0.2.2](https://github.com/avidala/jctl/compare/v0.2.1...v0.2.2) (2026-05-13)
 
 
