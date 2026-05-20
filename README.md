@@ -18,14 +18,14 @@
 
 ## Features
 
-- 🔐 **API Token Authentication** - Username + Jenkins API token, stored in your OS keychain
-- 🚀 **Pipeline Management** - List, run, describe, cancel pipelines with real-time monitoring
-- 📊 **Real-time Monitoring** - Stream logs and track job status
-- 🎨 **Beautiful Output** - Rich terminal UI with tables and colors
-- 🔧 **DevOps Optimized** - Built for everyday platform engineering pipelines
-- 🔒 **Secure Token Storage** - OS-native keychain integration
-- ⌨️ **Shell Completion** - Tab completion for commands, subcommands, and options
-- 🎯 **Multiple Profiles** - Manage dev, staging, and production environments separately
+- 🔐 **API Token Authentication** — Username + Jenkins API token, stored in the OS keychain (macOS Keychain / Linux Secret Service / Windows Credential Manager) with an encrypted file fallback at `~/.jctl/credentials.enc` for headless / CI environments.
+- 🚀 **Pipeline & Job Management** — List, run, describe, cancel; stream logs with `--follow`; `--wait` for completion.
+- 🎯 **Multiple Profiles** — `dev` / `stg` / `production` switchable per-invocation via `--profile` or `JCTL_PROFILE`.
+- 📦 **Machine-readable output** — `--output json|yaml|plain` on every read command; status banners and progress lines auto-route to stderr so stdout stays parseable for `jq` / `yq` pipelines.
+- 🌐 **Env-var configuration** — `JCTL_OUTPUT_FORMAT`, `JCTL_LOG_LEVEL`, `JCTL_JENKINS_URL`, `JCTL_PROFILE`, `JCTL_NO_COLOR`.
+- ⌨️ **Shell Completion** — Persistent on-disk cache (5-min TTL) + case-insensitive substring matching, so `jctl pipeline run hamc<Tab>` matches `managed-cloud/MC-26.05.1/hamc-upgrade-environment`. Confirmation-gated installer (`--install --dry-run` / `--install --yes`).
+- 🔁 **Resilient HTTP** — Automatic retry with exponential backoff on 429/503/504 and network errors; HTML stripped from Jenkins error pages; readable `ConnectTimeout: could not reach <host>` messages.
+- 🎨 **Rich terminal UI** — Tables, colors, sub-second durations rendered as `228ms` instead of `0s`.
 
 ## Quick Start
 
@@ -44,8 +44,11 @@ jctl --version
 #### Option 2: pipx (All platforms)
 
 ```bash
-# install the latest tagged release in an isolated env
-pipx install "git+https://github.com/avidala/jctl.git@v0.1.0"
+# Install the latest tagged release in an isolated env
+pipx install "git+https://github.com/avidala/jctl.git@v0.3.0"
+
+# Or track main
+pipx install "git+https://github.com/avidala/jctl.git"
 ```
 
 > **Note:** the name `jctl` on PyPI belongs to an unrelated Jamf project,
@@ -129,20 +132,26 @@ You're all set! Try: jctl pipeline list
 ### Basic Usage
 
 ```bash
-# Trigger a Jenkins job
+# Trigger a Jenkins job and block until it finishes
 jctl job trigger deploy-staging \
   --param environment=staging \
   --param branch=main \
   --wait
 
-# List pipelines matching a pattern
-jctl pipeline list --filter "deploy-*"
+# List pipelines, freshest first (substring filter, case-insensitive)
+jctl pipeline list --filter deploy
 
-# Stream logs for a specific build
-jctl job logs deploy-staging-142 --follow
+# Just the failed ones, machine-readable
+jctl --output json pipeline list --status FAILED | jq '.[] | {name, last_run}'
 
-# Cancel a running build
-jctl pipeline cancel deploy-staging 142
+# Stream logs for build #142 in real-time
+jctl job logs deploy-staging 142 --follow
+
+# Tail the latest build (build number is optional)
+jctl pipeline logs deploy-staging --follow
+
+# Cancel a running build (--yes skips the confirmation prompt)
+jctl pipeline cancel deploy-staging 142 --yes
 ```
 
 ### Working with Multiple Environments
@@ -172,8 +181,13 @@ jctl --profile production auth status
 ### Authentication Commands
 
 ```bash
-jctl auth token          # Configure Jenkins API token
-jctl auth status         # Show authentication status
+# Interactive setup
+jctl auth token
+
+# Non-interactive (for setup scripts / CI)
+jctl auth token --username you@example.com --token "$JENKINS_TOKEN"
+
+jctl auth status         # Show authentication status (--output json|yaml|plain)
 jctl auth logout         # Clear stored credentials
 ```
 
@@ -183,63 +197,65 @@ jctl auth logout         # Clear stored credentials
 ### Job Commands
 
 ```bash
-jctl job trigger <name>           # Trigger a job with parameters
-jctl job logs <name> [--follow]   # View or stream job logs
+jctl job trigger <name>                       # Trigger a job with parameters
+jctl job logs <name> [build] [--follow]       # View or stream job logs
 ```
 
-**Options:**
-- `--param KEY=VALUE` - Pass job parameters
-- `--wait` - Wait for job completion
-- `--follow` - Stream logs in real-time
+**Options for `trigger`:**
+- `-p, --param KEY=VALUE` - Pass job parameters (repeatable)
+- `--wait` - Block until the build finishes; exit non-zero on FAILURE/ABORTED
+- `--dry-run` - Print what would be triggered without calling Jenkins
+
+**Options for `logs`:**
+- `--follow, -f` - Stream logs in real-time (`X-More-Data` polling)
+- If `[build]` is omitted, the latest build is auto-resolved via `lastBuild`.
 
 ### Pipeline Commands
 
 ```bash
-jctl pipeline list                    # List available pipelines
-jctl pipeline run <name>              # Execute pipeline with parameters
-jctl pipeline describe <name> <num>   # Show pipeline details with stages
-jctl pipeline logs <name> [num]       # View or stream pipeline logs
-jctl pipeline cancel <name> <num>     # Cancel running pipeline
+jctl pipeline list                            # List available pipelines (sorted by recency)
+jctl pipeline run <name>                      # Execute pipeline with parameters
+jctl pipeline describe <name> <build>         # Show pipeline details with stages
+jctl pipeline logs <name> [build] [--follow]  # View or stream pipeline logs
+jctl pipeline cancel <name> <build>           # Cancel running pipeline
 ```
 
-**Options:**
-- `--param KEY=VALUE` - Pass pipeline parameters
-- `--wait` - Wait for pipeline completion
-- `--notify` - Get notification when pipeline completes
-- `--follow` - Stream logs in real-time
-- `--filter` - Filter pipeline list by pattern
-- `--folder` - Filter by Jenkins folder
+**Options for `list`:**
+- `-f, --filter PATTERN` - Substring filter, case-insensitive (matches anywhere in the full name)
+- `--folder FOLDER` - Limit to a Jenkins folder (e.g. `deploy/staging`)
+- `--status SUCCESS|FAILED|FAILURE|RUNNING|ABORTED` - Filter by last build status (`FAILED` is an alias for Jenkins' `FAILURE`)
+- `-n, --limit N` - Limit rows (default 50)
+
+**Options for `run`:**
+- `-p, --param KEY=VALUE` - Pipeline parameters (repeatable)
+- `--wait` - Block until the pipeline finishes; renders live stage progress
+- `--notify` - Print a completion summary without rendering live stages
+
+**Options for `cancel`:**
+- `--reason TEXT` - Audit-log reason for cancellation
+- `--yes, -y` - Skip the confirmation prompt. A declined prompt exits 130 (Ctrl+C convention).
 
 ### Configuration Commands
 
 ```bash
-jctl config init                      # Initialize configuration
-jctl config add-profile <name>        # Add new profile
-jctl config set <key> <val>           # Set configuration value
-jctl config get <key>                 # Get configuration value
-jctl config list                      # List all configurations
-jctl config show                      # Show full configuration
+jctl config init                              # Interactive setup (profile + auth in one flow)
+jctl config add-profile <name>                # Add a new profile (non-interactive)
+jctl config set <key> <val>                   # Set configuration value (type-validated)
+jctl config get <key>                         # Get configuration value
+jctl config list                              # Pretty-print all config
+jctl config show                              # Show the raw YAML
 ```
 
-### 🚧 Planned Features (v0.2.0)
+`config set` validates the value against the schema (an `int` field rejects `"notanumber"` instead of silently corrupting the file) and refuses unknown root-level keys.
 
-The following commands are planned for future releases:
+### Planned Features
 
-**Job Commands:**
-- `jctl job status` - Get job status
-- `jctl job stop` - Stop running job
-- `jctl job history` - Show job history
-- `jctl job params` - List job parameters
+See [ROADMAP.md](ROADMAP.md) for the full picture. Top of the list:
 
-**Pipeline Commands:**
-- `jctl pipeline search` - Search pipelines
-- `jctl pipeline pause` - Pause at input step
-- `jctl pipeline resume` - Resume paused pipeline
-- `jctl pipeline replay` - Replay previous run
-- `jctl pipeline restart` - Restart from beginning
-- `jctl pipeline validate` - Validate configuration
+- **Job**: `status`, `stop`, `history`, `params`
+- **Pipeline**: `search`, `pause`, `resume`, `replay`, `restart`, `validate`
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and roadmap.
+See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Configuration
 
@@ -312,37 +328,34 @@ mypy jctl
 ### Project Structure
 
 ```
-cli/jenkins/
-├── jctl/                      # Main package
-│   ├── __init__.py
-│   ├── __main__.py           # CLI entry point
-│   ├── cli.py                # Click command groups
-│   ├── auth/                 # Authentication module
-│   │   ├── api_token.py     # Jenkins API token auth
-│   │   └── keystore.py      # Secure credential storage
-│   ├── jenkins/              # Jenkins integration
-│   │   ├── client.py        # API client
-│   │   ├── jobs.py          # Job operations
-│   │   └── pipelines.py     # Pipeline operations
-│   ├── config/               # Configuration management
-│   │   ├── manager.py       # Config manager
-│   │   └── schemas.py       # Pydantic models
-│   ├── utils/                # Utilities
-│   │   ├── output.py        # Output formatting
-│   │   ├── logging.py       # Logging setup
-│   │   └── validators.py    # Input validation
-│   └── commands/             # CLI command implementations
-│       ├── auth.py
-│       ├── job.py
-│       ├── pipeline.py
-│       └── config.py
-├── tests/                    # Test suite
-│   ├── unit/                # Unit tests
-│   └── integration/         # Integration tests
-├── docs/                     # Documentation
-├── scripts/                  # Utility scripts
-├── pyproject.toml           # Project configuration
-└── README.md                # This file
+jctl/
+├── __main__.py               # Entry point: `python -m jctl` and the `jctl` script
+├── cli.py                    # Click root group, global flags, completion installer
+├── constants.py              # Exit codes (EXIT_AUTH_ERROR=3, EXIT_USER_CANCELLED=130, …)
+├── auth/
+│   ├── api_token.py          # Jenkins API token store/retrieve via SecureKeystore
+│   └── keystore.py           # OS keychain + encrypted file fallback (~/.jctl/credentials.enc)
+├── jenkins/
+│   └── client.py             # Async + sync API client with retry, CSRF, redirect-following
+├── config/
+│   ├── manager.py            # YAML load/save, interactive init, env-var overrides
+│   └── schemas.py            # Pydantic models (validate_assignment=True)
+├── utils/
+│   ├── output.py             # OutputFormatter (table/json/yaml/plain), format_duration
+│   ├── completion.py         # On-disk completion cache + substring matcher
+│   ├── jenkins_client_factory.py  # Build a JenkinsClient from config + stored creds
+│   ├── logging.py            # Rich logging setup
+│   └── password_prompt.py    # asterisk-masking prompt with getpass fallback
+└── commands/
+    ├── auth.py               # `jctl auth token | status | logout`
+    ├── job.py                # `jctl job trigger | logs`
+    ├── pipeline.py           # `jctl pipeline list | run | describe | logs | cancel`
+    └── config.py             # `jctl config init | get | set | list | show | add-profile`
+
+tests/unit/                   # ~200 tests, ~83% line coverage
+docs/                         # Architecture, development, user guides
+pyproject.toml
+ROADMAP.md  CHANGELOG.md  SECURITY.md  CONTRIBUTING.md
 ```
 
 ## Examples
@@ -393,46 +406,62 @@ fi
 
 ## Security
 
-- Tokens stored in OS-native keychains (macOS Keychain, Linux Secret Service, Windows Credential Manager)
-- Jenkins API token sent over HTTP Basic auth on HTTPS only
-- SSL certificate validation by default
-- Audit logging for all job triggers
-- Config files set with 0600 permissions
+- Credentials stored in OS-native keychains (macOS Keychain, Linux Secret Service, Windows Credential Manager).
+- When the OS keystore is unusable (locked Keychain, headless Linux without Secret Service, CI runners), credentials fall back to `~/.jctl/credentials.enc` — a Fernet-encrypted JSON blob written atomically with mode `0600`.
+- Jenkins API token sent over HTTP Basic auth; SSL certificate validation is on by default (toggle per-profile with `jenkins.verify_ssl`).
+- `~/.jctl/config.yaml` is written with mode `0600` and the directory with `0700`.
+- `jctl pipeline cancel <name> <build> --reason "<text>"` records a reason for the cancellation in the user-facing output; Jenkins itself logs the API call separately.
 
 ## Troubleshooting
 
-### Authentication Issues
+### Authentication issues
 
 ```bash
-# Check auth status
-jctl auth status
-
-# Re-authenticate
-jctl auth logout
-jctl auth token
+jctl auth status                # check whether a token is configured
+jctl auth logout && jctl auth token   # re-authenticate
 ```
 
-### Connection Issues
+If `auth token` fails with `Can't store password on keychain` (locked
+macOS Keychain, headless Linux without Secret Service, CI runner),
+jctl will automatically fall back to an encrypted file under
+`~/.jctl/credentials.enc`. No action needed — but verify with
+`ls -l ~/.jctl/credentials.enc`.
+
+### Connection issues
 
 ```bash
-# Test Jenkins connectivity
-jctl --debug pipeline list
+# See every retry attempt + the exact URL/path being requested
+jctl --log-level DEBUG pipeline list
 
-# Verify configuration
+# Point at a different Jenkins for one command without touching config
+JCTL_JENKINS_URL=https://jenkins-staging.example.com jctl pipeline list
+
+# What URL does my active profile actually point at?
 jctl config get jenkins.url
 ```
 
-### Token Rotation
+### Token rotation
 
 ```bash
-# Generate a new API token in Jenkins, then:
-jctl auth logout
-jctl auth token
+# Generate a new API token in Jenkins → Configure → API Token → Add new,
+# then either:
+jctl auth logout && jctl auth token                # interactive
+jctl auth token --username you@example.com --token "$NEW"   # non-interactive
 ```
+
+### Piping `jctl` into other tools
+
+`jctl` separates streams so machine-readable output stays clean:
+- Data (table / JSON / YAML / plain) → **stdout**
+- `Using API token authentication as …`, `Found N pipeline(s)`, progress
+  spinners, error messages → **stderr**
+
+So `jctl --output json pipeline list | jq '.[].name'` is always safe; the
+banners won't break your parser.
 
 ## Contributing
 
-See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## Support
 
@@ -468,7 +497,7 @@ See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for contributio
 
 ## License
 
-MIT License - See [LICENSE](../../LICENSE) for details.
+MIT License — see [LICENSE](LICENSE).
 
 ---
 
