@@ -1,8 +1,6 @@
 """Custom password prompt that shows asterisks."""
 
 import sys
-import termios
-import tty
 
 
 def password_prompt(prompt: str = "Password: ", mask: str = "*") -> str:
@@ -16,10 +14,18 @@ def password_prompt(prompt: str = "Password: ", mask: str = "*") -> str:
         The entered password string
     """
     try:
-        # Try to use termios for character-by-character input (Unix/Mac)
+        # Try to use termios for character-by-character input (Unix/Mac).
+        # `termios` is a Unix-only stdlib module — `import termios` at the
+        # top of this file would break Windows, so the import lives inside
+        # the helper and ImportError flows into the fallback.
         return _password_prompt_termios(prompt, mask)
-    except (ImportError, AttributeError, termios.error):
-        # Fall back to getpass on Windows or if termios fails
+    except (ImportError, AttributeError, OSError) as e:
+        # Fall back to getpass on Windows or if termios fails.
+        # OSError covers `io.UnsupportedOperation: ... has no fileno()` —
+        # raised when stdin is piped or otherwise not a real TTY (CI runs,
+        # `echo TOKEN | jctl auth token`, pytest capture). `termios.error`
+        # is a subclass of OSError so it's covered too.
+        del e  # silence unused-binding warnings
         import getpass
 
         return getpass.getpass(prompt)
@@ -35,6 +41,12 @@ def _password_prompt_termios(prompt: str, mask: str) -> str:
     Returns:
         The entered password string
     """
+    # Defer Unix-only imports so importing this module on Windows
+    # doesn't blow up at collection time. The caller catches
+    # ImportError → fallback to getpass.
+    import termios
+    import tty
+
     # Print prompt
     sys.stdout.write(prompt)
     sys.stdout.flush()
