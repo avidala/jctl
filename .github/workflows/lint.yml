@@ -27,10 +27,10 @@ jobs:
       - name: Run bandit
         run: bandit -r jctl/ -ll
 
-  # mypy is configured strictly in pyproject.toml but the codebase is
-  # not yet fully typed. Run it in advisory mode — `|| true` keeps the
-  # step green so the PR status summary stays useful. Remove the
-  # trailing `|| true` once `mypy jctl/` is clean.
+  # mypy was advisory while the codebase was being typed up. The QA
+  # back-fill brought `mypy jctl/` to zero errors under the strict
+  # pyproject.toml config, so this step is now blocking — re-introduce
+  # type drift, the PR fails.
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -45,11 +45,5 @@ jobs:
           pip install -e ".[dev]"
           pip install mypy==1.11.2
 
-      - name: Run mypy (advisory)
-        run: |
-          echo "::group::mypy output (advisory — failures will not block this PR)"
-          mypy jctl/ || mypy_exit=$?
-          echo "::endgroup::"
-          if [ -n "${mypy_exit:-}" ]; then
-            echo "::warning::mypy reported $mypy_exit errors. Type drift is visible above but is not blocking; tighten `mypy jctl/` to unblock removing this advisory shim."
-          fi
+      - name: Run mypy
+        run: mypy jctl/

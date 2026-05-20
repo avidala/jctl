@@ -95,7 +95,14 @@ select = [
 ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # do not perform function calls in argument defaults
-    "UP038", # deprecated by ruff: isinstance(x, X | Y) has runtime cost
+    # UP038: ruff suggests rewriting `isinstance(x, (int, str))` to
+    # `isinstance(x, int | str)`. The new form constructs a UnionType
+    # at every call (https://github.com/python/cpython/issues/103475),
+    # which is measurable on hot paths. Keep the tuple form.
+    # Newer ruff (≥ 0.1.x?) removed the rule entirely and warns that
+    # the ignore is a no-op — that's fine; CI is pinned to 0.9.2 in
+    # .github/workflows/lint.yml where the rule still fires.
+    "UP038",
 ]
 
 [tool.ruff.lint.per-file-ignores]

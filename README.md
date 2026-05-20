@@ -65,18 +65,27 @@ pip install -e ".[dev]"
 Enable tab completion for faster command entry:
 
 ```bash
-# Automatic installation (easiest)
+# Preview what `--install` will append to your rc file (no changes made)
+jctl completion --install --dry-run
+
+# Install with a confirmation prompt
 jctl completion --install
+
+# Install non-interactively (for setup scripts / dotfile bootstrap)
+jctl completion --install --yes
 
 # Then reload your shell
 source ~/.zshrc  # for zsh
 source ~/.bashrc # for bash
 ```
 
+`jctl completion --install` shows you the exact lines it would append and asks for confirmation before modifying your rc file. The snippet uses Click's built-in completion mechanism (`eval "$(_JCTL_COMPLETE=…_source jctl)"`), so it works regardless of how jctl is installed (Homebrew, pipx, editable). A second `--install` on an rc file that already contains the snippet is a no-op.
+
 After installation, you can use Tab to auto-complete:
 - Command names: `jctl pipe<Tab>` → `jctl pipeline`
 - Subcommands: `jctl pipeline li<Tab>` → `jctl pipeline list`
 - Options: `jctl pipeline run --<Tab>` → shows `--param`, `--wait`, `--notify`
+- Job names (substring, case-insensitive): `jctl pipeline run hamc<Tab>` → matches `managed-cloud/MC-26.05.1/hamc-upgrade-environment`
 
 See [docs/guides/COMPLETION_GUIDE.md](docs/guides/COMPLETION_GUIDE.md) for more details and manual setup.
 
@@ -256,12 +265,21 @@ defaults:
 
 ## Environment Variables
 
+Each variable is the env equivalent of a CLI flag (explicit flags still win):
+
+| Variable | Equivalent | Notes |
+|---|---|---|
+| `JCTL_PROFILE` | `--profile <name>` | Active profile |
+| `JCTL_OUTPUT_FORMAT` | `--output table\|json\|yaml\|plain` | Output format |
+| `JCTL_LOG_LEVEL` | `--log-level DEBUG\|INFO\|WARNING\|ERROR\|CRITICAL` | Takes precedence over `--debug` |
+| `JCTL_JENKINS_URL` | n/a (overrides the profile's `jenkins.url`) | Useful for one-off runs against a different host without editing config |
+| `JCTL_NO_COLOR` | n/a (sets Rich `no_color=True`) | Any non-empty value disables ANSI. The wider `NO_COLOR` convention is also honored. |
+
 ```bash
-JCTL_PROFILE=production           # Active profile
-JCTL_JENKINS_URL=https://...      # Jenkins URL
-JCTL_OUTPUT_FORMAT=json           # Output format
-JCTL_LOG_LEVEL=DEBUG              # Log level
-JCTL_NO_COLOR=1                   # Disable colors
+# Examples
+JCTL_OUTPUT_FORMAT=json jctl pipeline list | jq '.[].name'
+JCTL_JENKINS_URL=https://jenkins-dev.example.com jctl pipeline list
+JCTL_NO_COLOR=1 jctl auth status
 ```
 
 ## Development
