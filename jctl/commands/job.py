@@ -158,33 +158,28 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
     # Get authenticated client
     client = get_jenkins_client(ctx)
 
-    async def get_logs() -> int:
+    async def resolve_build() -> int:
         try:
-            # If no build number, get the latest build
-            if build_number is None:
-                with console.status(f"[cyan]Getting latest build for {job_name}...[/cyan]"):
-                    jobs = await client.get_jobs()
-                    job = next((j for j in jobs if j.get("fullName") == job_name), None)
-
-                    if not job:
-                        console.print(f"[red]Error:[/red] Job '{job_name}' not found")
-                        sys.exit(EXIT_JENKINS_API_ERROR)
-
-                    last_build = job.get("lastBuild")
-                    if not last_build:
-                        console.print(f"[red]Error:[/red] No builds found for '{job_name}'")
-                        sys.exit(EXIT_JENKINS_API_ERROR)
-
-                    latest_build_number = last_build.get("number")
-                    if not latest_build_number:
-                        console.print("[red]Error:[/red] Could not get latest build number")
-                        sys.exit(EXIT_JENKINS_API_ERROR)
-
-                    console.print(f"[dim]Using latest build #{latest_build_number}[/dim]\n")
-                    return int(latest_build_number)
-
-            return build_number
-
+            if build_number is not None:
+                return build_number
+            with console.status(f"[cyan]Getting latest build for {job_name}...[/cyan]"):
+                jobs = await client.get_jobs()
+                job = next((j for j in jobs if j.get("fullName") == job_name), None)
+                if not job:
+                    console.print(f"[red]Error:[/red] Job '{job_name}' not found")
+                    sys.exit(EXIT_JENKINS_API_ERROR)
+                last_build = job.get("lastBuild")
+                if not last_build:
+                    console.print(f"[red]Error:[/red] No builds found for '{job_name}'")
+                    sys.exit(EXIT_JENKINS_API_ERROR)
+                latest = last_build.get("number")
+                if not latest:
+                    console.print("[red]Error:[/red] Could not get latest build number")
+                    sys.exit(EXIT_JENKINS_API_ERROR)
+                console.print(f"[dim]Using latest build #{latest}[/dim]\n")
+                return int(latest)
+        except SystemExit:
+            raise
         except Exception as e:
             console.print(f"[red]Error getting build info:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
@@ -232,10 +227,14 @@ def logs(ctx: click.Context, job_name: str, build_number: int | None, follow: bo
             console.print(f"[red]Error fetching logs:[/red] {e}")
             sys.exit(EXIT_JENKINS_API_ERROR)
 
-    # Main execution
-    build_num = asyncio.run(get_logs())
+    # Single asyncio.run() — splitting "resolve build" and "fetch log" across
+    # two asyncio.run() calls closes the loop the httpx.AsyncClient was bound
+    # to, so the second call dies with "Event loop is closed".
+    async def main() -> None:
+        build_num = await resolve_build()
+        if follow:
+            await stream_logs(build_num)
+        else:
+            await fetch_logs(build_num)
 
-    if follow:
-        asyncio.run(stream_logs(build_num))
-    else:
-        asyncio.run(fetch_logs(build_num))
+    asyncio.run(main())

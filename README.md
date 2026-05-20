@@ -21,7 +21,7 @@
 - 🔐 **API Token Authentication** — Username + Jenkins API token, stored in the OS keychain (macOS Keychain / Linux Secret Service / Windows Credential Manager) with an encrypted file fallback at `~/.jctl/credentials.enc` for headless / CI environments.
 - 🚀 **Pipeline & Job Management** — List, run, describe, cancel; stream logs with `--follow`; `--wait` for completion.
 - 🎯 **Multiple Profiles** — `dev` / `stg` / `production` switchable per-invocation via `--profile` or `JCTL_PROFILE`.
-- 📦 **Machine-readable output** — `--output json|yaml|plain` on every read command; status banners and progress lines auto-route to stderr so stdout stays parseable for `jq` / `yq` pipelines.
+- 📦 **Machine-readable output** — `--output json|yaml|plain` (global flag, placed before the subcommand); status banners and progress lines auto-route to stderr so stdout stays parseable for `jq` / `yq` pipelines.
 - 🌐 **Env-var configuration** — `JCTL_OUTPUT_FORMAT`, `JCTL_LOG_LEVEL`, `JCTL_JENKINS_URL`, `JCTL_PROFILE`, `JCTL_NO_COLOR`.
 - ⌨️ **Shell Completion** — Persistent on-disk cache (5-min TTL) + case-insensitive substring matching, so `jctl pipeline run hamc<Tab>` matches `managed-cloud/MC-26.05.1/hamc-upgrade-environment`. Confirmation-gated installer (`--install --dry-run` / `--install --yes`).
 - 🔁 **Resilient HTTP** — Automatic retry with exponential backoff on 429/503/504 and network errors; HTML stripped from Jenkins error pages; readable `ConnectTimeout: could not reach <host>` messages.
@@ -187,8 +187,9 @@ jctl auth token
 # Non-interactive (for setup scripts / CI)
 jctl auth token --username you@example.com --token "$JENKINS_TOKEN"
 
-jctl auth status         # Show authentication status (--output json|yaml|plain)
-jctl auth logout         # Clear stored credentials
+jctl --output json auth status   # status as JSON (--output is global; place it before the subcommand)
+jctl auth status                 # Show authentication status
+jctl auth logout                 # Clear stored credentials
 ```
 
 **Documentation:**
@@ -215,7 +216,7 @@ jctl job logs <name> [build] [--follow]       # View or stream job logs
 ```bash
 jctl pipeline list                            # List available pipelines (sorted by recency)
 jctl pipeline run <name>                      # Execute pipeline with parameters
-jctl pipeline describe <name> <build>         # Show pipeline details with stages
+jctl pipeline describe <name> [build]         # Show pipeline details with stages (latest build by default)
 jctl pipeline logs <name> [build] [--follow]  # View or stream pipeline logs
 jctl pipeline cancel <name> <build>           # Cancel running pipeline
 ```

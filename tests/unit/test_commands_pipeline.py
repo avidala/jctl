@@ -115,6 +115,46 @@ def test_describe_404_exits_4(mock_factory):
     assert result.exit_code == EXIT_JENKINS_API_ERROR
 
 
+@patch("jctl.commands.pipeline.get_jenkins_client")
+def test_describe_without_build_uses_latest(mock_factory):
+    """`pipeline describe JOB` (no build) resolves lastBuild and proceeds."""
+    mock_client = mock_factory.return_value
+    mock_client.get_jobs = AsyncMock(
+        return_value=[{"fullName": "x", "name": "x", "lastBuild": {"number": 7}}]
+    )
+    mock_client.get_build_info = AsyncMock(
+        return_value={"result": "SUCCESS", "duration": 1000, "timestamp": 1, "url": "u"}
+    )
+    mock_client.get_workflow_info = AsyncMock(return_value={"stages": []})
+
+    result = _runner().invoke(cli, ["pipeline", "describe", "x"])
+    assert result.exit_code == 0, result.output
+    assert "Using latest build #7" in result.output
+    mock_client.get_build_info.assert_awaited_once_with("x", 7)
+
+
+@patch("jctl.commands.pipeline.get_jenkins_client")
+def test_describe_without_build_pipeline_not_found_exits_4(mock_factory):
+    mock_client = mock_factory.return_value
+    mock_client.get_jobs = AsyncMock(return_value=[])
+
+    result = _runner().invoke(cli, ["pipeline", "describe", "missing/x"])
+    assert result.exit_code == EXIT_JENKINS_API_ERROR
+    assert "Pipeline 'missing/x' not found" in result.output
+
+
+@patch("jctl.commands.pipeline.get_jenkins_client")
+def test_describe_without_build_no_builds_exits_4(mock_factory):
+    mock_client = mock_factory.return_value
+    mock_client.get_jobs = AsyncMock(
+        return_value=[{"fullName": "x", "name": "x", "lastBuild": None}]
+    )
+
+    result = _runner().invoke(cli, ["pipeline", "describe", "x"])
+    assert result.exit_code == EXIT_JENKINS_API_ERROR
+    assert "No builds found" in result.output
+
+
 # --- logs ----------------------------------------------------------------
 
 
