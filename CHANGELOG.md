@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Part of the AVIDALA DevOps Tools suite*
 
+## [0.3.1](https://github.com/avidala/jctl/compare/v0.3.0...v0.3.1) (2026-05-20)
+
+
+### Documentation
+
+* **readme:** refresh to reflect v0.3.0 reality ([#75](https://github.com/avidala/jctl/issues/75)) ([a04eda9](https://github.com/avidala/jctl/commit/a04eda9babaf8d7c7117673a53e45f1b52e48219))
+
 ## [0.3.0](https://github.com/avidala/jctl/compare/v0.2.2...v0.3.0) (2026-05-20)
 
 
