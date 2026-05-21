@@ -37,7 +37,7 @@ dependencies = [
     "python-jenkins>=1.8.1",
     "pyyaml>=6.0.1",
     "cryptography>=43.0.1,<47.0",
-    "python-dotenv>=1.0.0",
+    "python-dotenv>=1.2.2",
     "tenacity>=9.1.4,<10.0",
 ]
 
