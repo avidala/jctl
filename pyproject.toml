@@ -30,7 +30,7 @@ classifiers = [
 
 dependencies = [
     "click>=8.1.7",
-    "rich>=13.7.0",
+    "rich>=15.0.0",
     "httpx>=0.25.2,<0.29",
     "keyring>=25.7.0",
     "pydantic>=2.13.4",
